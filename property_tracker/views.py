@@ -9,7 +9,8 @@ from django.views.decorators.http import require_http_methods
 from decimal import Decimal
 import json
 
-from .models import SearchZone, Listing, PriceHistory, PropertyType
+from .models import SearchZone, Listing, PriceHistory, PropertyType, UserSearchPreferences
+from .forms import UserSearchPreferencesForm
 
 
 @login_required
@@ -250,3 +251,30 @@ def logout_view(request):
     """
     auth_logout(request)
     return redirect('property_tracker:login')
+
+
+@login_required
+def settings(request):
+    """
+    Page de paramètres utilisateur pour gérer les préférences de recherche
+    """
+    # Récupérer ou créer les préférences de l'utilisateur
+    preferences, created = UserSearchPreferences.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        form = UserSearchPreferencesForm(request.POST, instance=preferences)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Vos préférences de recherche ont été mises à jour avec succès!')
+            return redirect('property_tracker:settings')
+        else:
+            messages.error(request, 'Erreur lors de la mise à jour de vos préférences.')
+    else:
+        form = UserSearchPreferencesForm(instance=preferences)
+
+    context = {
+        'form': form,
+        'preferences': preferences,
+    }
+
+    return render(request, 'property_tracker/settings.html', context)

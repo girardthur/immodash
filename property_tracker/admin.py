@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import SearchZone, Listing, PriceHistory
+from .models import SearchZone, Listing, PriceHistory, UserSearchPreferences
+
+
+@admin.register(UserSearchPreferences)
+class UserSearchPreferencesAdmin(admin.ModelAdmin):
+    list_display = ['user', 'city', 'radius_km', 'property_type', 'updated_at']
+    list_filter = ['property_type', 'created_at']
+    search_fields = ['user__username', 'city']
+    readonly_fields = ['created_at', 'updated_at']
 
 
 @admin.register(SearchZone)

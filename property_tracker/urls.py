@@ -20,4 +20,7 @@ urlpatterns = [
     path('search-zones/', views.search_zones, name='search_zones'),
     path('search-zones/create/', views.create_search_zone, name='create_search_zone'),
     path('search-zones/<int:zone_id>/delete/', views.delete_search_zone, name='delete_search_zone'),
+
+    # Paramètres
+    path('settings/', views.settings, name='settings'),
 ]
