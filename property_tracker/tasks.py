@@ -24,7 +24,7 @@ def scrape_all_search_zones():
             logger.info(f"Scraping de la zone : {zone}")
             results = scrape_search_zone(zone)
 
-            zone_listings_count = len(results['leboncoin']) + len(results['seloger'])
+            zone_listings_count = len(results['leboncoin'])
             total_listings += zone_listings_count
 
             logger.info(f"Zone {zone}: {zone_listings_count} annonces traitées")
@@ -56,7 +56,7 @@ def scrape_single_zone(zone_id: int):
         logger.info(f"Scraping de la zone : {zone}")
 
         results = scrape_search_zone(zone)
-        total_listings = len(results['leboncoin']) + len(results['seloger'])
+        total_listings = len(results['leboncoin'])
 
         logger.info(f"Zone {zone}: {total_listings} annonces traitées")
         return {
@@ -64,7 +64,6 @@ def scrape_single_zone(zone_id: int):
             'zone_id': zone_id,
             'total_listings': total_listings,
             'leboncoin': len(results['leboncoin']),
-            'seloger': len(results['seloger']),
             'timestamp': timezone.now().isoformat()
         }
 
