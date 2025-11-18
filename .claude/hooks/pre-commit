@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Hook pre-commit
+# S'exécute avant chaque commit
+
+echo "🔍 Vérifications pre-commit..."
+
+# Vérifier la syntaxe Python de tous les fichiers modifiés
+PYTHON_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$')
+
+if [ -n "$PYTHON_FILES" ]; then
+    echo "Vérification des fichiers Python..."
+
+    # Vérifier la syntaxe
+    for file in $PYTHON_FILES; do
+        python -m py_compile "$file" 2>/dev/null
+        if [ $? -ne 0 ]; then
+            echo "❌ Erreur de syntaxe dans $file"
+            exit 1
+        fi
+    done
+
+    echo "✓ Syntaxe Python valide"
+fi
+
+# Vérifier les migrations Django si models.py a été modifié
+if echo "$PYTHON_FILES" | grep -q "models.py"; then
+    echo ""
+    echo "⚠ models.py a été modifié"
+    echo "Vérification des migrations..."
+
+    if docker-compose ps | grep -q "Up"; then
+        docker-compose exec -T web python manage.py makemigrations --dry-run --check
+        if [ $? -ne 0 ]; then
+            echo "❌ Des migrations doivent être créées"
+            echo "Lancez : python manage.py makemigrations"
+            exit 1
+        fi
+    fi
+fi
+
+echo "✓ Toutes les vérifications sont passées"
+exit 0

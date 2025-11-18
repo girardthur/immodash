@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Hook de démarrage de session Claude Code
+# Ce script s'exécute au démarrage de chaque session
+
+echo "🚀 Démarrage de la session Immodash..."
+
+# Vérifier si Docker est en cours d'exécution
+if command -v docker-compose &> /dev/null; then
+    echo "✓ Docker Compose détecté"
+
+    # Vérifier l'état des services
+    if docker-compose ps | grep -q "Up"; then
+        echo "✓ Services Docker en cours d'exécution"
+    else
+        echo "⚠ Les services Docker ne sont pas démarrés"
+        echo "  Lancez : docker-compose up -d"
+    fi
+fi
+
+# Vérifier la présence de l'environnement virtuel Python
+if [ -d "venv" ]; then
+    echo "✓ Environnement virtuel Python détecté"
+else
+    echo "⚠ Environnement virtuel non trouvé (venv/)"
+fi
+
+# Vérifier la présence du fichier .env
+if [ -f ".env" ]; then
+    echo "✓ Fichier .env présent"
+else
+    echo "⚠ Fichier .env manquant"
+    echo "  Créez-le avec : cp .env.example .env"
+fi
+
+echo ""
+echo "📋 Commandes slash disponibles :"
+echo "  /test - Lancer les tests avec coverage"
+echo "  /migrate - Créer et appliquer les migrations"
+echo "  /scrape - Lancer le scraping manuel"
+echo "  /docker-logs - Afficher les logs Docker"
+echo "  /docker-restart - Redémarrer les services"
+echo "  /shell - Ouvrir le shell Django"
+echo "  /check - Vérifier la santé de l'app"
+echo "  /stats - Afficher les statistiques DB"
+echo ""
+echo "✨ Session prête !"
