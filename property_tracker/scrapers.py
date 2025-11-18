@@ -1,12 +1,10 @@
 """
-Scrapers pour récupérer les annonces immobilières depuis Leboncoin et SeLoger
+Scrapers pour récupérer les annonces immobilières depuis Leboncoin
 """
 import logging
 from typing import List, Dict, Optional
 from decimal import Decimal
 from lbc import LeboncoinAPI
-import requests
-from bs4 import BeautifulSoup
 from django.utils import timezone
 
 from .models import SearchZone, Listing, PriceHistory, Source, PropertyType
@@ -179,125 +177,12 @@ class LeboncoinScraper(BaseScraper):
             return None
 
 
-class SeLogerScraper(BaseScraper):
-    """Scraper pour SeLoger (implémentation basique avec BeautifulSoup)"""
-
-    def scrape(self) -> List[Listing]:
-        """
-        Scrape les annonces depuis SeLoger
-        Note: Cette implémentation est basique et devra être adaptée
-        selon la structure HTML de SeLoger et ses protections anti-scraping
-        """
-        try:
-            # Construire l'URL de recherche
-            # Cette URL est un exemple et devra être adaptée
-            property_types = []
-            if self.search_zone.property_type in [PropertyType.APARTMENT, PropertyType.BOTH]:
-                property_types.append('1')  # Appartement
-            if self.search_zone.property_type in [PropertyType.HOUSE, PropertyType.BOTH]:
-                property_types.append('2')  # Maison
-
-            base_url = "https://www.seloger.com/list.htm"
-            params = {
-                'types': ','.join(property_types),
-                'projects': '2',  # Achat
-                'places': self.search_zone.city,
-            }
-
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-
-            # Note: SeLoger a des protections anti-scraping
-            # Cette implémentation est basique et peut nécessiter:
-            # - L'utilisation de proxies
-            # - La gestion de CAPTCHAs
-            # - L'utilisation de Playwright/Selenium pour JavaScript
-
-            response = requests.get(base_url, params=params, headers=headers, timeout=10)
-            response.raise_for_status()
-
-            soup = BeautifulSoup(response.content, 'html.parser')
-
-            listings = []
-            # Cette partie doit être adaptée selon la structure HTML actuelle de SeLoger
-            # Voici un exemple de structure
-            listing_cards = soup.find_all('article', class_='listing')  # À adapter
-
-            for card in listing_cards:
-                listing_data = self._parse_seloger_card(card)
-                if listing_data:
-                    listing = self.save_or_update_listing(listing_data)
-                    if listing:
-                        listings.append(listing)
-
-            return listings
-
-        except requests.RequestException as e:
-            logger.error(f"Erreur lors de la requête SeLoger : {e}")
-            return []
-        except Exception as e:
-            logger.error(f"Erreur lors du scraping SeLoger : {e}")
-            return []
-
-    def _parse_seloger_card(self, card) -> Optional[Dict]:
-        """
-        Parse une carte d'annonce SeLoger
-        Note: Cette méthode doit être adaptée selon la structure HTML actuelle
-        """
-        try:
-            # Exemple de parsing - à adapter selon la structure réelle
-            external_id = card.get('data-listing-id', '')
-            if not external_id:
-                return None
-
-            title = card.find('h2', class_='title')  # À adapter
-            price_elem = card.find('span', class_='price')  # À adapter
-            surface_elem = card.find('span', class_='surface')  # À adapter
-
-            if not all([title, price_elem]):
-                return None
-
-            # Extraction et nettoyage des données
-            price_text = price_elem.text.strip().replace('€', '').replace(' ', '').replace('\xa0', '')
-            price = Decimal(price_text)
-
-            surface = None
-            if surface_elem:
-                surface_text = surface_elem.text.strip().replace('m²', '').replace(' ', '')
-                try:
-                    surface = Decimal(surface_text)
-                except:
-                    pass
-
-            return {
-                'external_id': f"seloger_{external_id}",
-                'source': Source.SELOGER,
-                'url': f"https://www.seloger.com/annonces/achat/{external_id}",
-                'title': title.text.strip(),
-                'description': '',  # À extraire si disponible
-                'property_type': PropertyType.APARTMENT,  # À déterminer depuis les données
-                'price': price,
-                'surface': surface,
-                'rooms': None,  # À extraire si disponible
-                'bedrooms': None,
-                'city': self.search_zone.city,
-                'postal_code': '',
-                'latitude': None,
-                'longitude': None,
-            }
-        except Exception as e:
-            logger.error(f"Erreur lors du parsing de la carte SeLoger : {e}")
-            return None
-
-
 def scrape_search_zone(search_zone: SearchZone) -> Dict[str, List[Listing]]:
     """
     Scrape toutes les sources pour une zone de recherche donnée
     """
     results = {
         'leboncoin': [],
-        'seloger': [],
     }
 
     # Scraper Leboncoin
@@ -307,14 +192,6 @@ def scrape_search_zone(search_zone: SearchZone) -> Dict[str, List[Listing]]:
         logger.info(f"Leboncoin: {len(results['leboncoin'])} annonces trouvées pour {search_zone}")
     except Exception as e:
         logger.error(f"Erreur Leboncoin pour {search_zone}: {e}")
-
-    # Scraper SeLoger
-    try:
-        seloger_scraper = SeLogerScraper(search_zone)
-        results['seloger'] = seloger_scraper.scrape()
-        logger.info(f"SeLoger: {len(results['seloger'])} annonces trouvées pour {search_zone}")
-    except Exception as e:
-        logger.error(f"Erreur SeLoger pour {search_zone}: {e}")
 
     return results
 

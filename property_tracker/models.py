@@ -11,7 +11,6 @@ class PropertyType(models.TextChoices):
 
 class Source(models.TextChoices):
     LEBONCOIN = 'leboncoin', 'Leboncoin'
-    SELOGER = 'seloger', 'SeLoger'
 
 
 class SearchZone(models.Model):
