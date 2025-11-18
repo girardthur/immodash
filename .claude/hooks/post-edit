@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Hook post-édition
+# S'exécute après chaque édition de fichier
+
+FILE_PATH="$1"
+
+# Vérifier si c'est un fichier Python
+if [[ "$FILE_PATH" == *.py ]]; then
+    # Vérifier la syntaxe Python avec flake8 si disponible
+    if command -v flake8 &> /dev/null; then
+        if ! flake8 "$FILE_PATH" --max-line-length=100 --extend-ignore=E501,W503 2>/dev/null; then
+            echo "⚠ Problèmes de style détectés par flake8"
+        fi
+    fi
+fi
+
+# Vérifier si c'est un fichier de modèle Django
+if [[ "$FILE_PATH" == *models.py ]]; then
+    echo "💡 N'oubliez pas de créer les migrations si nécessaire :"
+    echo "   python manage.py makemigrations"
+fi
+
+# Vérifier si c'est requirements.txt
+if [[ "$FILE_PATH" == *requirements.txt ]]; then
+    echo "💡 N'oubliez pas de réinstaller les dépendances :"
+    echo "   pip install -r requirements.txt"
+    echo "   ou docker-compose build web"
+fi
