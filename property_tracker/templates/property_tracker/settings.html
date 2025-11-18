@@ -13,110 +13,62 @@
     <!-- Section Préférences de recherche -->
     <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-5 border-b border-gray-200">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-900">Préférences de recherche</h2>
-                    <p class="mt-1 text-sm text-gray-600">Définissez les zones géographiques et types de biens à surveiller.</p>
-                </div>
-                <a href="{% url 'property_tracker:create_search_zone' %}"
-                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                    + Nouvelle zone
-                </a>
-            </div>
+            <h2 class="text-xl font-semibold text-gray-900">Préférences de recherche</h2>
+            <p class="mt-1 text-sm text-gray-600">Définissez la zone géographique et le type de bien à surveiller.</p>
         </div>
 
-        <div class="px-6 py-5">
-            {% if zones_with_counts %}
-            <div class="space-y-4">
-                {% for item in zones_with_counts %}
-                <div class="border border-gray-200 rounded-lg p-5 hover:border-blue-300 transition-colors" x-data="{ open: false }">
-                    <div class="flex items-start justify-between">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-3">
-                                <h3 class="text-lg font-medium text-gray-900">{{ item.zone.city }}</h3>
-                                {% if item.zone.is_active %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Actif
-                                </span>
-                                {% else %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                    Inactif
-                                </span>
-                                {% endif %}
-                            </div>
+        <div class="px-6 py-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
 
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                                <div>
-                                    <dt class="text-gray-500">Rayon de recherche</dt>
-                                    <dd class="text-gray-900 font-medium mt-1">{{ item.zone.radius_km }} km</dd>
-                                </div>
-                                <div>
-                                    <dt class="text-gray-500">Type de bien</dt>
-                                    <dd class="text-gray-900 font-medium mt-1">{{ item.zone.get_property_type_display }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="text-gray-500">Annonces</dt>
-                                    <dd class="text-gray-900 font-medium mt-1">
-                                        <span class="text-green-600">{{ item.active_count }} actives</span>
-                                        <span class="text-gray-400 mx-1">•</span>
-                                        <span class="text-gray-500">{{ item.inactive_count }} vendues</span>
-                                    </dd>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-2 ml-4">
-                            <a href="{% url 'property_tracker:edit_search_zone' item.zone.id %}"
-                               class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Modifier
-                            </a>
-                            <a href="{% url 'property_tracker:delete_search_zone' item.zone.id %}"
-                               class="inline-flex items-center px-3 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-white hover:bg-red-50">
-                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                Supprimer
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="mt-3 pt-3 border-t border-gray-100">
-                        <button @click="open = !open" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                            <span x-show="!open">Afficher les détails</span>
-                            <span x-show="open" x-cloak>Masquer les détails</span>
-                        </button>
-                        <div x-show="open" x-cloak class="mt-3">
-                            <dl class="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <dt class="text-gray-500">Créée le</dt>
-                                    <dd class="text-gray-900">{{ item.zone.created_at|date:"d/m/Y à H:i" }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="text-gray-500">Dernière modification</dt>
-                                    <dd class="text-gray-900">{{ item.zone.updated_at|date:"d/m/Y à H:i" }}</dd>
-                                </div>
-                            </dl>
-                        </div>
-                    </div>
+                <div>
+                    <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
+                    <input type="text" name="city" id="city" required value="{{ search_zone.city }}"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                           placeholder="Ex: Paris, Lyon, Marseille...">
+                    <p class="mt-1 text-sm text-gray-500">Entrez le nom de la ville que vous souhaitez surveiller.</p>
                 </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <h3 class="mt-4 text-sm font-medium text-gray-900">Aucune zone de recherche</h3>
-                <p class="mt-2 text-sm text-gray-500">Commencez par créer votre première zone de recherche pour suivre les annonces immobilières.</p>
-                <div class="mt-6">
-                    <a href="{% url 'property_tracker:create_search_zone' %}"
-                       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                        + Créer une zone
-                    </a>
+
+                <div>
+                    <label for="radius_km" class="block text-sm font-medium text-gray-700">Rayon de recherche (en km)</label>
+                    <input type="number" name="radius_km" id="radius_km" min="1" max="100" required value="{{ search_zone.radius_km }}"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                           placeholder="Ex: 10">
+                    <p class="mt-1 text-sm text-gray-500">Rayon de recherche autour de la ville (1-100 km).</p>
+                </div>
+
+                <div>
+                    <label for="property_type" class="block text-sm font-medium text-gray-700">Type de bien</label>
+                    <select name="property_type" id="property_type" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        {% for value, label in property_types %}
+                        <option value="{{ value }}" {% if search_zone.property_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="mt-1 text-sm text-gray-500">Sélectionnez le type de biens à surveiller.</p>
+                </div>
+
+                <div class="pt-4 border-t border-gray-200">
+                    <button type="submit"
+                            class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Enregistrer les préférences
+                    </button>
+                </div>
+            </form>
+
+            <!-- Statistiques -->
+            {% if search_zone.city %}
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h3 class="text-sm font-medium text-gray-700 mb-3">Statistiques de votre zone de recherche</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <dt class="text-sm text-green-700">Annonces actives</dt>
+                        <dd class="text-2xl font-bold text-green-900 mt-1">{{ active_listings_count }}</dd>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <dt class="text-sm text-gray-700">Annonces vendues</dt>
+                        <dd class="text-2xl font-bold text-gray-900 mt-1">{{ inactive_listings_count }}</dd>
+                    </div>
                 </div>
             </div>
             {% endif %}

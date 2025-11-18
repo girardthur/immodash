@@ -180,124 +180,48 @@ def listing_price_history(request, listing_id):
 
 
 @login_required
-def search_zones(request):
-    """
-    Liste des zones de recherche de l'utilisateur
-    """
-    zones = request.user.search_zones.all().order_by('-created_at')
-
-    # Ajouter le nombre d'annonces par zone
-    zones_with_counts = []
-    for zone in zones:
-        active_count = zone.listings.filter(is_active=True).count()
-        inactive_count = zone.listings.filter(is_active=False).count()
-        zones_with_counts.append({
-            'zone': zone,
-            'active_count': active_count,
-            'inactive_count': inactive_count,
-        })
-
-    context = {
-        'zones_with_counts': zones_with_counts,
-    }
-
-    return render(request, 'property_tracker/search_zones.html', context)
-
-
-@login_required
-def create_search_zone(request):
-    """
-    Créer une nouvelle zone de recherche
-    """
-    if request.method == 'POST':
-        city = request.POST.get('city')
-        radius_km = request.POST.get('radius_km')
-        property_type = request.POST.get('property_type')
-
-        if city and radius_km and property_type:
-            SearchZone.objects.create(
-                user=request.user,
-                city=city,
-                radius_km=int(radius_km),
-                property_type=property_type
-            )
-            messages.success(request, f'Zone de recherche "{city}" créée avec succès!')
-            return redirect('property_tracker:search_zones')
-        else:
-            messages.error(request, 'Tous les champs sont requis.')
-
-    return render(request, 'property_tracker/create_search_zone.html')
-
-
-@login_required
-def delete_search_zone(request, zone_id):
-    """
-    Supprimer une zone de recherche
-    """
-    zone = get_object_or_404(SearchZone, id=zone_id, user=request.user)
-
-    if request.method == 'POST':
-        zone.delete()
-        messages.success(request, 'Zone de recherche supprimée avec succès!')
-        return redirect('property_tracker:search_zones')
-
-    return render(request, 'property_tracker/delete_search_zone.html', {'zone': zone})
-
-
-@login_required
 def settings(request):
     """
-    Page de réglages utilisateur avec gestion des préférences de recherche
+    Page de réglages utilisateur avec gestion de la zone de recherche unique
     """
-    zones = request.user.search_zones.all().order_by('-created_at')
-
-    # Ajouter le nombre d'annonces par zone
-    zones_with_counts = []
-    for zone in zones:
-        active_count = zone.listings.filter(is_active=True).count()
-        inactive_count = zone.listings.filter(is_active=False).count()
-        zones_with_counts.append({
-            'zone': zone,
-            'active_count': active_count,
-            'inactive_count': inactive_count,
-        })
-
-    context = {
-        'zones_with_counts': zones_with_counts,
-    }
-
-    return render(request, 'property_tracker/settings.html', context)
-
-
-@login_required
-def edit_search_zone(request, zone_id):
-    """
-    Modifier une zone de recherche existante
-    """
-    zone = get_object_or_404(SearchZone, id=zone_id, user=request.user)
+    # Récupérer ou créer la zone de recherche unique de l'utilisateur
+    search_zone, created = SearchZone.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'city': '',
+            'radius_km': 10,
+            'property_type': PropertyType.BOTH,
+            'is_active': True,
+        }
+    )
 
     if request.method == 'POST':
         city = request.POST.get('city')
         radius_km = request.POST.get('radius_km')
         property_type = request.POST.get('property_type')
-        is_active = request.POST.get('is_active') == 'on'
 
         if city and radius_km and property_type:
-            zone.city = city
-            zone.radius_km = int(radius_km)
-            zone.property_type = property_type
-            zone.is_active = is_active
-            zone.save()
-            messages.success(request, f'Zone de recherche "{city}" modifiée avec succès!')
+            search_zone.city = city
+            search_zone.radius_km = int(radius_km)
+            search_zone.property_type = property_type
+            search_zone.save()
+            messages.success(request, 'Préférences de recherche enregistrées avec succès!')
             return redirect('property_tracker:settings')
         else:
             messages.error(request, 'Tous les champs sont requis.')
 
+    # Statistiques de la zone
+    active_listings_count = search_zone.listings.filter(is_active=True).count()
+    inactive_listings_count = search_zone.listings.filter(is_active=False).count()
+
     context = {
-        'zone': zone,
+        'search_zone': search_zone,
         'property_types': PropertyType.choices,
+        'active_listings_count': active_listings_count,
+        'inactive_listings_count': inactive_listings_count,
     }
-    return render(request, 'property_tracker/edit_search_zone.html', context)
+
+    return render(request, 'property_tracker/settings.html', context)
 
 
 def logout_view(request):
