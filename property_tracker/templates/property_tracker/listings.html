@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Annonces - Immodash{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{ selectedListing: null }">
+    <!-- En-tête -->
+    <h1 class="text-3xl font-bold text-gray-900">Annonces immobilières</h1>
+
+    <!-- Filtres -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <form method="get" class="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <!-- Statut -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                <select name="status" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        onchange="this.form.submit()">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Toutes</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Actives</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Vendues</option>
+                </select>
+            </div>
+
+            <!-- Source -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Source</label>
+                <select name="source" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        onchange="this.form.submit()">
+                    <option value="all" {% if source_filter == 'all' %}selected{% endif %}>Toutes</option>
+                    <option value="leboncoin" {% if source_filter == 'leboncoin' %}selected{% endif %}>Leboncoin</option>
+                    <option value="seloger" {% if source_filter == 'seloger' %}selected{% endif %}>SeLoger</option>
+                </select>
+            </div>
+
+            <!-- Type de bien -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Type de bien</label>
+                <select name="property_type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        onchange="this.form.submit()">
+                    <option value="all" {% if property_type_filter == 'all' %}selected{% endif %}>Tous</option>
+                    <option value="apartment" {% if property_type_filter == 'apartment' %}selected{% endif %}>Appartement</option>
+                    <option value="house" {% if property_type_filter == 'house' %}selected{% endif %}>Maison</option>
+                </select>
+            </div>
+
+            <!-- Tri -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Trier par</label>
+                <select name="sort" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        onchange="this.form.submit()">
+                    <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Plus récent</option>
+                    <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Prix croissant</option>
+                    <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
+                    <option value="price_per_sqm_asc" {% if sort_by == 'price_per_sqm_asc' %}selected{% endif %}>Prix/m² croissant</option>
+                    <option value="price_per_sqm_desc" {% if sort_by == 'price_per_sqm_desc' %}selected{% endif %}>Prix/m² décroissant</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des annonces -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="divide-y divide-gray-200">
+            {% for listing in page_obj %}
+            <div class="p-6 hover:bg-gray-50 transition">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="text-lg font-semibold text-gray-900">{{ listing.title }}</h3>
+                            {% if not listing.is_active %}
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                Vendu
+                            </span>
+                            {% endif %}
+                            {% if listing.has_price_changed %}
+                            <button @click="selectedListing = {{ listing.id }}"
+                                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800 hover:bg-orange-200 cursor-pointer">
+                                Prix modifié ({{ listing.last_price_change_percent|floatformat:1 }}%)
+                            </button>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                            <span class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                {{ listing.city }}
+                            </span>
+                            {% if listing.rooms %}
+                            <span>{{ listing.rooms }} pièces</span>
+                            {% endif %}
+                            {% if listing.surface %}
+                            <span>{{ listing.surface }} m²</span>
+                            {% endif %}
+                            <span class="capitalize">{{ listing.get_source_display }}</span>
+                        </div>
+
+                        <div class="flex items-center gap-6">
+                            <div>
+                                <p class="text-sm text-gray-500">Prix</p>
+                                <p class="text-2xl font-bold text-blue-600">{{ listing.current_price|floatformat:0 }} €</p>
+                            </div>
+                            {% if listing.price_per_sqm %}
+                            <div>
+                                <p class="text-sm text-gray-500">Prix au m²</p>
+                                <p class="text-xl font-semibold text-gray-900">{{ listing.price_per_sqm|floatformat:0 }} €/m²</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="ml-4">
+                        <a href="{{ listing.url }}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Voir l'annonce
+                            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-12 text-center text-gray-500">
+                Aucune annonce trouvée pour ces critères.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow">
+        <div class="flex-1 flex justify-between sm:hidden">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}&source={{ source_filter }}&property_type={{ property_type_filter }}&sort={{ sort_by }}"
+               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Précédent
+            </a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}&source={{ source_filter }}&property_type={{ property_type_filter }}&sort={{ sort_by }}"
+               class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Suivant
+            </a>
+            {% endif %}
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Page <span class="font-medium">{{ page_obj.number }}</span> sur <span class="font-medium">{{ page_obj.paginator.num_pages }}</span>
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}&source={{ source_filter }}&property_type={{ property_type_filter }}&sort={{ sort_by }}"
+                       class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        Précédent
+                    </a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}&source={{ source_filter }}&property_type={{ property_type_filter }}&sort={{ sort_by }}"
+                       class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        Suivant
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modal pour l'historique des prix -->
+    <div x-show="selectedListing" x-cloak
+         class="fixed z-10 inset-0 overflow-y-auto"
+         @keydown.escape.window="selectedListing = null">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="selectedListing = null"></div>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Historique des prix</h3>
+                        <button @click="selectedListing = null" class="text-gray-400 hover:text-gray-500">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="price-history-chart" class="h-96"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Charger l'historique des prix quand une annonce est sélectionnée
+document.addEventListener('alpine:init', () => {
+    let lastSelectedListing = null;
+
+    setInterval(() => {
+        const currentListing = Alpine.raw(Alpine.store('selectedListing'));
+        if (currentListing && currentListing !== lastSelectedListing) {
+            lastSelectedListing = currentListing;
+            loadPriceHistory(currentListing);
+        }
+    }, 100);
+});
+
+function loadPriceHistory(listingId) {
+    fetch(`/listings/${listingId}/price-history/`)
+        .then(response => response.json())
+        .then(data => {
+            const trace = {
+                x: data.dates,
+                y: data.prices,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Prix',
+                line: { color: 'rgb(59, 130, 246)', width: 3 },
+                marker: { size: 8 }
+            };
+
+            const layout = {
+                title: data.listing_title,
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'Prix (€)' },
+                margin: { t: 60, b: 60, l: 80, r: 40 }
+            };
+
+            Plotly.newPlot('price-history-chart', [trace], layout, {responsive: true});
+        });
+}
+</script>
+{% endblock %}

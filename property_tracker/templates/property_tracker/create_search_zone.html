@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Nouvelle zone de recherche - Immodash{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Créer une zone de recherche</h1>
+        <p class="mt-2 text-sm text-gray-600">Définissez une zone géographique et les types de biens à surveiller.</p>
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
+                <input type="text" name="city" id="city" required
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       placeholder="Ex: Paris, Lyon, Marseille...">
+                <p class="mt-1 text-sm text-gray-500">Entrez le nom de la ville que vous souhaitez surveiller.</p>
+            </div>
+
+            <div>
+                <label for="radius_km" class="block text-sm font-medium text-gray-700">Rayon (en km)</label>
+                <input type="number" name="radius_km" id="radius_km" min="1" max="100" required
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       placeholder="Ex: 10">
+                <p class="mt-1 text-sm text-gray-500">Rayon de recherche autour de la ville (1-100 km).</p>
+            </div>
+
+            <div>
+                <label for="property_type" class="block text-sm font-medium text-gray-700">Type de bien</label>
+                <select name="property_type" id="property_type" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                    <option value="both">Appartements et Maisons</option>
+                    <option value="apartment">Appartements uniquement</option>
+                    <option value="house">Maisons uniquement</option>
+                </select>
+                <p class="mt-1 text-sm text-gray-500">Sélectionnez le type de biens à surveiller.</p>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <a href="{% url 'property_tracker:search_zones' %}"
+                   class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Annuler
+                </a>
+                <button type="submit"
+                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                    Créer la zone
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
