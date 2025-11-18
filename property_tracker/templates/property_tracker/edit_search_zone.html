@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier la zone - Immodash{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Modifier la zone de recherche</h1>
+        <p class="mt-2 text-sm text-gray-600">Modifiez les paramètres de votre zone de recherche.</p>
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
+                <input type="text" name="city" id="city" required value="{{ zone.city }}"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       placeholder="Ex: Paris, Lyon, Marseille...">
+                <p class="mt-1 text-sm text-gray-500">Entrez le nom de la ville que vous souhaitez surveiller.</p>
+            </div>
+
+            <div>
+                <label for="radius_km" class="block text-sm font-medium text-gray-700">Rayon (en km)</label>
+                <input type="number" name="radius_km" id="radius_km" min="1" max="100" required value="{{ zone.radius_km }}"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       placeholder="Ex: 10">
+                <p class="mt-1 text-sm text-gray-500">Rayon de recherche autour de la ville (1-100 km).</p>
+            </div>
+
+            <div>
+                <label for="property_type" class="block text-sm font-medium text-gray-700">Type de bien</label>
+                <select name="property_type" id="property_type" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                    {% for value, label in property_types %}
+                    <option value="{{ value }}" {% if zone.property_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <p class="mt-1 text-sm text-gray-500">Sélectionnez le type de biens à surveiller.</p>
+            </div>
+
+            <div class="flex items-center">
+                <input type="checkbox" name="is_active" id="is_active"
+                       class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                       {% if zone.is_active %}checked{% endif %}>
+                <label for="is_active" class="ml-2 block text-sm text-gray-700">
+                    Zone de recherche active
+                </label>
+            </div>
+            <p class="text-sm text-gray-500">Décochez cette case pour désactiver temporairement la surveillance de cette zone.</p>
+
+            <div class="flex justify-end gap-3">
+                <a href="{% url 'property_tracker:settings' %}"
+                   class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Annuler
+                </a>
+                <button type="submit"
+                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                    Enregistrer les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

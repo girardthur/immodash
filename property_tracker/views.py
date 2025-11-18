@@ -244,6 +244,62 @@ def delete_search_zone(request, zone_id):
     return render(request, 'property_tracker/delete_search_zone.html', {'zone': zone})
 
 
+@login_required
+def settings(request):
+    """
+    Page de réglages utilisateur avec gestion des préférences de recherche
+    """
+    zones = request.user.search_zones.all().order_by('-created_at')
+
+    # Ajouter le nombre d'annonces par zone
+    zones_with_counts = []
+    for zone in zones:
+        active_count = zone.listings.filter(is_active=True).count()
+        inactive_count = zone.listings.filter(is_active=False).count()
+        zones_with_counts.append({
+            'zone': zone,
+            'active_count': active_count,
+            'inactive_count': inactive_count,
+        })
+
+    context = {
+        'zones_with_counts': zones_with_counts,
+    }
+
+    return render(request, 'property_tracker/settings.html', context)
+
+
+@login_required
+def edit_search_zone(request, zone_id):
+    """
+    Modifier une zone de recherche existante
+    """
+    zone = get_object_or_404(SearchZone, id=zone_id, user=request.user)
+
+    if request.method == 'POST':
+        city = request.POST.get('city')
+        radius_km = request.POST.get('radius_km')
+        property_type = request.POST.get('property_type')
+        is_active = request.POST.get('is_active') == 'on'
+
+        if city and radius_km and property_type:
+            zone.city = city
+            zone.radius_km = int(radius_km)
+            zone.property_type = property_type
+            zone.is_active = is_active
+            zone.save()
+            messages.success(request, f'Zone de recherche "{city}" modifiée avec succès!')
+            return redirect('property_tracker:settings')
+        else:
+            messages.error(request, 'Tous les champs sont requis.')
+
+    context = {
+        'zone': zone,
+        'property_types': PropertyType.choices,
+    }
+    return render(request, 'property_tracker/edit_search_zone.html', context)
+
+
 def logout_view(request):
     """
     Déconnexion de l'utilisateur
