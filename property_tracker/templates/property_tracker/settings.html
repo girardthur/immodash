@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Paramètres - Immodash{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <!-- En-tête -->
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Paramètres</h1>
+        <p class="mt-2 text-sm text-gray-600">Gérez vos préférences de recherche immobilière</p>
+    </div>
+
+    <!-- Formulaire de préférences de recherche -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-5 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Préférences de recherche</h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Définissez votre zone de recherche unique pour le tracking des annonces immobilières
+            </p>
+        </div>
+
+        <form method="post" class="px-6 py-6 space-y-6">
+            {% csrf_token %}
+
+            <!-- Ville -->
+            <div>
+                <label for="{{ form.city.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.city.label }}
+                </label>
+                {{ form.city }}
+                {% if form.city.help_text %}
+                <p class="mt-2 text-sm text-gray-500">{{ form.city.help_text }}</p>
+                {% endif %}
+                {% if form.city.errors %}
+                <div class="mt-2 text-sm text-red-600">
+                    {{ form.city.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Rayon -->
+            <div>
+                <label for="{{ form.radius_km.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.radius_km.label }}
+                </label>
+                {{ form.radius_km }}
+                {% if form.radius_km.help_text %}
+                <p class="mt-2 text-sm text-gray-500">{{ form.radius_km.help_text }}</p>
+                {% endif %}
+                {% if form.radius_km.errors %}
+                <div class="mt-2 text-sm text-red-600">
+                    {{ form.radius_km.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Type de bien -->
+            <div>
+                <label for="{{ form.property_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.property_type.label }}
+                </label>
+                {{ form.property_type }}
+                {% if form.property_type.help_text %}
+                <p class="mt-2 text-sm text-gray-500">{{ form.property_type.help_text }}</p>
+                {% endif %}
+                {% if form.property_type.errors %}
+                <div class="mt-2 text-sm text-red-600">
+                    {{ form.property_type.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Informations sur les préférences actuelles -->
+            <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800">À propos de vos préférences</h3>
+                        <div class="mt-2 text-sm text-blue-700">
+                            <p>Vous ne pouvez définir qu'une seule zone de recherche par compte.</p>
+                            <p class="mt-1">Cette zone sera utilisée pour tracker automatiquement les nouvelles annonces immobilières correspondant à vos critères.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <a href="{% url 'property_tracker:dashboard' %}"
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Annuler
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Enregistrer les préférences
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Préférences actuelles (résumé) -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Vos préférences actuelles</h3>
+        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+                <dt class="text-sm font-medium text-gray-500">Ville</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900">{{ preferences.city }}</dd>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+                <dt class="text-sm font-medium text-gray-500">Rayon</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900">{{ preferences.radius_km }} km</dd>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+                <dt class="text-sm font-medium text-gray-500">Type de bien</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900">{{ preferences.get_property_type_display }}</dd>
+            </div>
+        </dl>
+        {% if preferences.updated_at %}
+        <p class="mt-4 text-xs text-gray-500">
+            Dernière mise à jour : {{ preferences.updated_at|date:"d/m/Y à H:i" }}
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

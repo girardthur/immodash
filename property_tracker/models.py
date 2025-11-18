@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class PropertyType(models.TextChoices):
@@ -11,6 +13,42 @@ class PropertyType(models.TextChoices):
 
 class Source(models.TextChoices):
     LEBONCOIN = 'leboncoin', 'Leboncoin'
+
+
+class UserSearchPreferences(models.Model):
+    """Préférences de recherche d'un utilisateur (une seule zone par utilisateur)"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='search_preferences')
+    city = models.CharField(max_length=200, verbose_name='Ville', default='Paris')
+    radius_km = models.IntegerField(verbose_name='Rayon (km)', default=10)
+    property_type = models.CharField(
+        max_length=20,
+        choices=PropertyType.choices,
+        default=PropertyType.BOTH,
+        verbose_name='Type de bien'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Préférences de recherche'
+        verbose_name_plural = 'Préférences de recherche'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.city} ({self.radius_km}km) - {self.get_property_type_display()}"
+
+
+@receiver(post_save, sender=User)
+def create_user_search_preferences(sender, instance, created, **kwargs):
+    """Créer automatiquement les préférences de recherche pour chaque nouvel utilisateur"""
+    if created:
+        UserSearchPreferences.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_search_preferences(sender, instance, **kwargs):
+    """Sauvegarder les préférences de recherche quand l'utilisateur est sauvegardé"""
+    if hasattr(instance, 'search_preferences'):
+        instance.search_preferences.save()
 
 
 class SearchZone(models.Model):
