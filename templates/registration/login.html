@@ -6,10 +6,10 @@
 <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
         <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
                 Immodash
             </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
                 Connectez-vous à votre compte
             </p>
         </div>
@@ -20,25 +20,25 @@
                 <div>
                     <label for="id_username" class="sr-only">Nom d'utilisateur</label>
                     <input id="id_username" name="username" type="text" required
-                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-colors"
                            placeholder="Nom d'utilisateur">
                 </div>
                 <div>
                     <label for="id_password" class="sr-only">Mot de passe</label>
                     <input id="id_password" name="password" type="password" required
-                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-colors"
                            placeholder="Mot de passe">
                 </div>
             </div>
 
             {% if form.errors %}
-            <div class="rounded-md bg-red-50 p-4">
+            <div class="rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
                 <div class="flex">
                     <div class="ml-3">
-                        <h3 class="text-sm font-medium text-red-800">
+                        <h3 class="text-sm font-medium text-red-800 dark:text-red-300">
                             Identifiants incorrects
                         </h3>
-                        <div class="mt-2 text-sm text-red-700">
+                        <div class="mt-2 text-sm text-red-700 dark:text-red-400">
                             <p>Veuillez vérifier votre nom d'utilisateur et votre mot de passe.</p>
                         </div>
                     </div>
@@ -48,7 +48,7 @@
 
             <div>
                 <button type="submit"
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                     Se connecter
                 </button>
             </div>

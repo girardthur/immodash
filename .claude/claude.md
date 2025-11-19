@@ -1,220 +1,189 @@
-# Immodash - Property Tracker SaaS
+# CLAUDE.md
 
-## Vue d'ensemble du projet
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Immodash est une plateforme SaaS de tracking immobilier pour Leboncoin avec dashboard et statistiques en temps réel. Le système scrape automatiquement les annonces immobilières et détecte les changements (prix, nouvelles annonces, ventes).
+## Project Overview
 
-## Stack technique
+Immodash is a property tracking SaaS platform that automatically scrapes real estate listings from Leboncoin, detecting new listings, price changes, and sold properties. Built with Django 5.1, Celery for async tasks, and modern frontend (TailwindCSS, HTMX, Alpine.js).
 
-- **Backend**: Django 5.1 + Python 3.11
-- **Base de données**: SQLite (dev), PostgreSQL recommandé (prod)
-- **Tâches asynchrones**: Celery 5.5 + Redis 7.0
-- **Frontend**: TailwindCSS + HTMX + Alpine.js
-- **Graphiques**: Plotly
-- **Containerisation**: Docker + Docker Compose
-- **Scraping**: Bibliothèque `lbc` pour Leboncoin
+## Development Setup
 
-## Architecture du projet
-
-```
-immodash/
-├── config/                 # Configuration Django & Celery
-│   ├── settings.py        # Settings Django
-│   ├── urls.py            # URLs principales
-│   ├── celery.py          # Configuration Celery + Beat
-│   └── wsgi.py
-├── property_tracker/       # Application principale
-│   ├── models.py          # SearchZone, Listing, PriceHistory, UserSearchPreferences
-│   ├── scrapers.py        # Scraper Leboncoin
-│   ├── tasks.py           # Tâches Celery (scraping automatique)
-│   ├── views.py           # Vues Django
-│   ├── forms.py           # Formulaires Django
-│   ├── urls.py            # URLs de l'app
-│   ├── admin.py           # Admin Django
-│   └── templates/         # Templates HTML
-├── templates/             # Templates globaux (base, auth)
-├── docker-compose.yml     # Orchestration Docker
-├── Dockerfile             # Image Docker
-├── entrypoint.sh          # Script d'initialisation Docker
-└── requirements.txt       # Dépendances Python
-```
-
-## Modèles de données
-
-### SearchZone
-Zone de recherche définie par un utilisateur :
-- `user`: Utilisateur propriétaire
-- `city`: Ville
-- `radius`: Rayon de recherche (km)
-- `property_type`: Type de bien (appartement/maison)
-
-### Listing
-Annonce immobilière :
-- `search_zone`: Zone de recherche liée
-- `external_id`: ID externe (Leboncoin)
-- `title`, `description`, `price`, `surface`, `rooms`
-- `city`, `postal_code`, `url`, `image_url`
-- `source`: Source (leboncoin)
-- `status`: active/sold
-- `last_seen`: Dernière fois vue (pour détecter les ventes)
-
-### PriceHistory
-Historique des changements de prix :
-- `listing`: Annonce liée
-- `old_price`, `new_price`
-- `change_percentage`: Pourcentage de changement
-- `timestamp`: Date du changement
-
-### UserSearchPreferences
-Préférences de recherche utilisateur :
-- `user`: Utilisateur
-- `min_price`, `max_price`
-- `min_surface`, `max_surface`
-- `min_rooms`, `max_rooms`
-- `cities`: Liste de villes
-
-## Fonctionnalités principales
-
-### Scraping automatique
-- Scraping toutes les 30 minutes via Celery Beat
-- Détection automatique des nouvelles annonces
-- Détection des changements de prix (avec historique)
-- Marquage automatique des annonces vendues (disparues >24h)
-
-### Dashboard
-- Statistiques globales (actives, vendues, min/max prix, taux de rotation)
-- Graphique prix moyen au m² par nombre de pièces
-- Évolution des prix dans le temps (30 derniers jours)
-- Gestion des zones de recherche
-
-### Page des annonces
-- Filtres : Statut, Source, Type de bien
-- Tri : Date, Prix, Prix/m²
-- Badge de changement de prix
-- Popup avec historique détaillé (graphique Plotly)
-- Pagination
-
-## Commandes utiles
-
-### Django
+### Docker (Recommended)
 ```bash
-# Créer migrations
-python manage.py makemigrations
-
-# Appliquer migrations
-python manage.py migrate
-
-# Créer superutilisateur
-python manage.py createsuperuser
-
-# Shell Django
-python manage.py shell
-
-# Lancer serveur dev
-python manage.py runserver
-```
-
-### Celery
-```bash
-# Worker
-celery -A config worker -l info
-
-# Beat (tâches périodiques)
-celery -A config beat -l info
-```
-
-### Docker
-```bash
-# Lancer tous les services
+# Start all services (web, celery_worker, celery_beat, redis)
 docker-compose up -d
 
-# Voir les logs
+# Execute Django commands
+docker-compose exec web python manage.py <command>
+
+# View logs
 docker-compose logs -f web
 docker-compose logs -f celery_worker
 docker-compose logs -f celery_beat
-
-# Exécuter une commande Django
-docker-compose exec web python manage.py <commande>
-
-# Arrêter les services
-docker-compose down
 ```
 
-## Conventions de code
-
-### Python
-- PEP 8 pour le style
-- Type hints recommandés pour les fonctions
-- Docstrings pour les fonctions complexes
-- Imports triés : stdlib, third-party, local
-
-### Django
-- Class-based views préférées aux function-based views
-- Utiliser `select_related()` et `prefetch_related()` pour optimiser les requêtes
-- Toujours utiliser `get_object_or_404()` pour les objets uniques
-- Formulaires Django pour la validation
-
-### Templates
-- TailwindCSS pour le styling
-- HTMX pour les interactions dynamiques
-- Alpine.js pour les interactions client-side simples
-
-## Tests
-
-### Lancer les tests
+### Local Development
+Requires 3 terminals:
 ```bash
-# Tous les tests
+# Terminal 1: Django dev server
+python manage.py runserver
+
+# Terminal 2: Celery worker
+celery -A config worker -l info
+
+# Terminal 3: Celery beat (periodic tasks)
+celery -A config beat -l info
+```
+
+## Common Commands
+
+### Database Migrations
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### Testing
+```bash
+# Run all tests
 python manage.py test
 
-# Tests d'une app spécifique
+# Specific app
 python manage.py test property_tracker
 
-# Avec coverage
+# With coverage
 coverage run --source='.' manage.py test
 coverage report
 ```
 
-## Variables d'environnement importantes
-
-- `DEBUG`: Mode debug Django
-- `SECRET_KEY`: Clé secrète Django
-- `ALLOWED_HOSTS`: Hôtes autorisés (production)
-- `DATABASE_URL`: URL de la base de données (optionnel)
-- `REDIS_URL`: URL Redis pour Celery
-
-## Problèmes courants
-
-### Le scraping ne fonctionne pas
-1. Vérifier que Celery Worker et Beat sont lancés
-2. Consulter les logs : `docker-compose logs -f celery_worker celery_beat`
-3. Tester manuellement dans le shell Django :
+### Manual Scraping
 ```python
+# In Django shell
 from property_tracker.tasks import scrape_all_search_zones
 scrape_all_search_zones()
+
+# Or for a single zone
+from property_tracker.tasks import scrape_single_zone
+scrape_single_zone(zone_id=1)
 ```
 
-### Erreur de migration
+## Architecture
+
+### Core Models (`property_tracker/models.py`)
+
+**UserSearchPreferences** (OneToOne with User)
+- Single search zone per user with city, radius, property_type
+- Auto-created for new users via signal
+
+**SearchZone** (ForeignKey to User)
+- Multiple zones per user possible
+- Fields: city, radius_km, property_type, is_active
+- Users can create/manage multiple search zones
+
+**Listing** (ForeignKey to SearchZone)
+- Unique by `external_id` (e.g., "lbc_12345")
+- Tracks: current_price, surface, price_per_sqm, rooms, city, coordinates
+- Status fields: is_active, first_seen_at, last_seen_at, sold_at
+- Price change tracking: has_price_changed, last_price_change_date, last_price_change_percent
+
+**PriceHistory** (ForeignKey to Listing)
+- Historical record of all price changes
+- Fields: price, price_per_sqm, change_percent, detected_at
+
+### Scraping Architecture (`property_tracker/scrapers.py`)
+
+**BaseScraper** abstract class:
+- `save_or_update_listing()`: Core logic for new listings vs. price changes
+  - New listing → Create Listing + initial PriceHistory entry
+  - Existing listing with price change → Update Listing + add PriceHistory entry
+  - Existing listing without change → Update last_seen_at only
+
+**LeboncoinScraper(BaseScraper)**:
+- Uses `lbc` library (v1.0.10)
+- `scrape()`: Search with city/radius, returns list of Listing objects
+- `_parse_leboncoin_item()`: Extracts data from API response
+
+**mark_inactive_listings()**: Marks listings as sold if not seen for >24h
+
+### Celery Tasks (`property_tracker/tasks.py`)
+
+All tasks are `@shared_task` decorated:
+
+- `scrape_all_search_zones()`: Scrapes all active SearchZones
+- `scrape_single_zone(zone_id)`: Scrapes one zone
+- `check_inactive_listings()`: Marks old listings as sold
+- `periodic_scraping_task()`: Combines scraping + inactive check (runs every 30 min)
+
+**Celery Beat Schedule** (`config/celery.py`):
+```python
+'scrape-every-30-minutes': {
+    'task': 'property_tracker.tasks.periodic_scraping_task',
+    'schedule': crontab(minute='*/30'),
+}
+```
+
+### Frontend Pattern
+
+- **TailwindCSS** for styling
+- **HTMX** for dynamic interactions (filters, sorting, pagination)
+- **Alpine.js** for client-side interactions (modals, dropdowns)
+- **Plotly** for price history charts
+
+### Django Conventions
+
+- Class-based views preferred
+- Use `select_related()` and `prefetch_related()` for query optimization
+- Forms for validation
+- `get_object_or_404()` for single object retrieval
+
+## Custom Slash Commands
+
+- `/stats` - Display database statistics
+- `/docker-restart` - Restart all Docker services
+- `/migrate` - Create and apply migrations
+- `/scrape` - Manual scraping of all zones
+- `/check` - Django health check
+- `/docker-logs` - View Docker logs
+- `/test` - Run tests with coverage
+- `/shell` - Open Django shell in Docker
+
+## Key Implementation Details
+
+### Price Change Detection
+When scraping finds an existing listing:
+1. Compare `current_price` with new price
+2. If different: calculate `change_percent`, update listing fields, create PriceHistory entry
+3. If same: only update `last_seen_at` (via auto_now on save)
+
+### Automatic Listing Status
+- Listings marked as sold (`is_active=False`, `sold_at=now()`) if `last_seen_at < now() - 24h`
+- Handled by `mark_inactive_listings()` called in periodic task
+
+### User Search Flow
+1. User creates SearchZone (city, radius, property_type)
+2. Zone automatically picked up by periodic scraping (every 30 min)
+3. Or trigger manual scraping via `/scrape` or shell command
+
+## Troubleshooting
+
+### Scraping Issues
+1. Check Celery worker/beat are running: `docker-compose ps`
+2. Check logs: `docker-compose logs -f celery_worker celery_beat`
+3. Test manually in Django shell (see Manual Scraping above)
+
+### Migration Errors
 ```bash
 python manage.py migrate --fake-initial
 ```
 
-### Problème de permissions Docker
-```bash
-docker-compose down -v
-docker-compose up -d
-```
+### Database Statistics (Stats Command Issue)
+Note: The `/stats` command references old model fields (`status='active'`/`status='sold'` and `price` instead of `current_price`). Current model uses `is_active` boolean and `current_price`.
 
-## Améliorations prioritaires
+## Production Considerations
 
-1. **Alertes** : Système d'email/push pour nouvelles annonces
-2. **Filtres avancés** : Plus de critères de recherche
-3. **Tests** : Couverture de tests complète
-4. **Performance** : Optimisation des requêtes SQL
-5. **API REST** : Pour application mobile future
-
-## Ressources
-
-- Documentation Django : https://docs.djangoproject.com/
-- Documentation Celery : https://docs.celeryproject.org/
-- TailwindCSS : https://tailwindcss.com/docs
-- HTMX : https://htmx.org/docs/
+- Switch to PostgreSQL (SQLite not recommended for production)
+- Set `DEBUG=False`
+- Configure strong `SECRET_KEY`
+- Set proper `ALLOWED_HOSTS`
+- Use proper WSGI server (Gunicorn included in requirements)
+- Consider adding Nginx/Traefik for HTTPS and static files

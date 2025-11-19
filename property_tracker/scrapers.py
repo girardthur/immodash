@@ -4,7 +4,7 @@ Scrapers pour récupérer les annonces immobilières depuis Leboncoin
 import logging
 from typing import List, Dict, Optional
 from decimal import Decimal
-from lbc import LeboncoinAPI
+from lbc import Client, Category, City
 from django.utils import timezone
 
 from .models import SearchZone, Listing, PriceHistory, Source, PropertyType
@@ -108,72 +108,116 @@ class LeboncoinScraper(BaseScraper):
         Scrape les annonces depuis Leboncoin
         """
         try:
-            api = LeboncoinAPI()
+            # Créer un client Leboncoin
+            client = Client()
 
-            # Déterminer le type de catégorie
-            if self.search_zone.property_type == PropertyType.APARTMENT:
-                category = 'ventes_immobilieres'  # À ajuster selon l'API lbc
-            elif self.search_zone.property_type == PropertyType.HOUSE:
-                category = 'ventes_immobilieres'
-            else:
-                category = 'ventes_immobilieres'
+            # Utiliser la catégorie ventes immobilières
+            category = Category.IMMOBILIER_VENTES_IMMOBILIERES
 
-            # Rechercher les annonces
-            # Note: Cette partie doit être adaptée selon la documentation de lbc
-            # Voici une implémentation de base
+            # Construire les paramètres de recherche
+            # On utilise le nom de la ville comme texte de recherche
+            # Le rayon en mètres (lbc utilise des mètres par défaut)
             search_params = {
-                'location': self.search_zone.city,
-                'radius': self.search_zone.radius_km * 1000,  # Convertir en mètres
                 'category': category,
+                'text': self.search_zone.city,
+                'limit': 100,  # Limite par page
             }
 
-            results = api.search(**search_params)
+            # Filtres supplémentaires selon le type de propriété
+            if self.search_zone.property_type == PropertyType.APARTMENT:
+                search_params['real_estate_type'] = 1  # 1 = appartement
+            elif self.search_zone.property_type == PropertyType.HOUSE:
+                search_params['real_estate_type'] = 2  # 2 = maison
+            # BOTH = pas de filtre sur le type
+
+            # Effectuer la recherche
+            search_result = client.search(**search_params)
 
             listings = []
-            for item in results:
+            for ad in search_result.ads:
                 # Extraire les données de l'annonce
-                listing_data = self._parse_leboncoin_item(item)
+                listing_data = self._parse_leboncoin_ad(ad)
                 if listing_data:
                     listing = self.save_or_update_listing(listing_data)
                     if listing:
                         listings.append(listing)
 
+            logger.info(f"Scraping terminé : {len(listings)} annonces traitées pour {self.search_zone}")
             return listings
 
         except Exception as e:
-            logger.error(f"Erreur lors du scraping Leboncoin : {e}")
+            logger.error(f"Erreur lors du scraping Leboncoin pour {self.search_zone}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return []
 
-    def _parse_leboncoin_item(self, item) -> Optional[Dict]:
+    def _parse_leboncoin_ad(self, ad) -> Optional[Dict]:
         """
-        Parse un item Leboncoin et retourne un dictionnaire avec les données
+        Parse un objet Ad de lbc et retourne un dictionnaire avec les données
         """
         try:
-            # Déterminer le type de propriété
+            # Déterminer le type de propriété à partir des attributs
             property_type = PropertyType.APARTMENT  # Par défaut
-            if 'attributes' in item:
-                real_estate_type = item.get('attributes', {}).get('real_estate_type', '')
-                if 'maison' in real_estate_type.lower():
-                    property_type = PropertyType.HOUSE
+            surface = None
+            rooms = None
+            bedrooms = None
+
+            # Extraire les attributs de l'annonce
+            for attr in ad.attributes:
+                if attr.key == 'real_estate_type':
+                    # 1 = appartement, 2 = maison
+                    if attr.value == '2':
+                        property_type = PropertyType.HOUSE
+                    elif attr.value == '1':
+                        property_type = PropertyType.APARTMENT
+                elif attr.key == 'square':
+                    try:
+                        surface = float(attr.value) if attr.value else None
+                    except (ValueError, TypeError):
+                        surface = None
+                elif attr.key == 'rooms':
+                    try:
+                        rooms = int(attr.value) if attr.value else None
+                    except (ValueError, TypeError):
+                        rooms = None
+                elif attr.key == 'bedrooms':
+                    try:
+                        bedrooms = int(attr.value) if attr.value else None
+                    except (ValueError, TypeError):
+                        bedrooms = None
+
+            # Extraire les données de localisation
+            city = self.search_zone.city
+            postal_code = ''
+            latitude = None
+            longitude = None
+
+            if ad.location:
+                city = ad.location.city or city
+                postal_code = ad.location.zipcode or ''
+                latitude = ad.location.lat
+                longitude = ad.location.lng
 
             return {
-                'external_id': f"lbc_{item.get('list_id', '')}",
+                'external_id': f"lbc_{ad.id}",
                 'source': Source.LEBONCOIN,
-                'url': item.get('url', ''),
-                'title': item.get('subject', ''),
-                'description': item.get('body', ''),
+                'url': ad.url,
+                'title': ad.subject,
+                'description': ad.body or '',
                 'property_type': property_type,
-                'price': item.get('price', [0])[0] if isinstance(item.get('price'), list) else item.get('price', 0),
-                'surface': item.get('attributes', {}).get('square', None),
-                'rooms': item.get('attributes', {}).get('rooms', None),
-                'bedrooms': item.get('attributes', {}).get('bedrooms', None),
-                'city': item.get('location', {}).get('city', self.search_zone.city),
-                'postal_code': item.get('location', {}).get('zipcode', ''),
-                'latitude': item.get('location', {}).get('lat', None),
-                'longitude': item.get('location', {}).get('lng', None),
+                'price': float(ad.price) if ad.price else 0,
+                'surface': surface,
+                'rooms': rooms,
+                'bedrooms': bedrooms,
+                'city': city,
+                'postal_code': postal_code,
+                'latitude': latitude,
+                'longitude': longitude,
             }
         except Exception as e:
-            logger.error(f"Erreur lors du parsing de l'item Leboncoin : {e}")
+            logger.error(f"Erreur lors du parsing de l'annonce {ad.id}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return None
 
 
