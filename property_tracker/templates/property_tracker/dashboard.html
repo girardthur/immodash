@@ -6,9 +6,9 @@
 <div class="space-y-6">
     <!-- En-tête -->
     <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
         <a href="{% url 'property_tracker:create_search_zone' %}"
-           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
             + Nouvelle zone de recherche
         </a>
     </div>
@@ -16,18 +16,18 @@
     <!-- Statistiques principales -->
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Annonces actives -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg transition-colors">
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Annonces actives</dt>
-                            <dd class="text-2xl font-semibold text-gray-900">{{ active_listings_count }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Annonces actives</dt>
+                            <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ active_listings_count }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -35,18 +35,18 @@
         </div>
 
         <!-- Annonces vendues -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg transition-colors">
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <svg class="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="h-6 w-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Annonces vendues</dt>
-                            <dd class="text-2xl font-semibold text-gray-900">{{ inactive_listings_count }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Annonces vendues</dt>
+                            <dd class="text-2xl font-semibold text-gray-900 dark:text-white">{{ inactive_listings_count }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -54,18 +54,18 @@
         </div>
 
         <!-- Prix minimum -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg transition-colors">
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Prix minimum</dt>
-                            <dd class="text-2xl font-semibold text-gray-900">
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Prix minimum</dt>
+                            <dd class="text-2xl font-semibold text-gray-900 dark:text-white">
                                 {% if min_price %}{{ min_price|floatformat:0 }}€{% else %}-{% endif %}
                             </dd>
                         </dl>
@@ -75,18 +75,18 @@
         </div>
 
         <!-- Prix maximum -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg transition-colors">
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
                         </svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Prix maximum</dt>
-                            <dd class="text-2xl font-semibold text-gray-900">
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Prix maximum</dt>
+                            <dd class="text-2xl font-semibold text-gray-900 dark:text-white">
                                 {% if max_price %}{{ max_price|floatformat:0 }}€{% else %}-{% endif %}
                             </dd>
                         </dl>
@@ -97,49 +97,49 @@
     </div>
 
     <!-- Taux de rotation -->
-    <div class="bg-white shadow rounded-lg p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Taux de rotation</h2>
-        <p class="text-3xl font-bold text-blue-600">{{ avg_days_on_market }} jours</p>
-        <p class="text-sm text-gray-500 mt-1">Durée moyenne avant vente</p>
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Taux de rotation</h2>
+        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ avg_days_on_market }} jours</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Durée moyenne avant vente</p>
     </div>
 
     <!-- Graphiques -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Prix moyen au m² par nombre de pièces -->
-        <div class="bg-white shadow rounded-lg p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Prix moyen au m² par nombre de pièces</h2>
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Prix moyen au m² par nombre de pièces</h2>
             <div id="rooms-chart"></div>
         </div>
 
         <!-- Évolution du prix moyen au m² -->
-        <div class="bg-white shadow rounded-lg p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Évolution du prix moyen au m² (30 derniers jours)</h2>
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Évolution du prix moyen au m² (30 derniers jours)</h2>
             <div id="evolution-chart"></div>
         </div>
     </div>
 
     <!-- Zones de recherche -->
-    <div class="bg-white shadow rounded-lg p-6">
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-900">Vos zones de recherche</h2>
-            <a href="{% url 'property_tracker:search_zones' %}" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Vos zones de recherche</h2>
+            <a href="{% url 'property_tracker:search_zones' %}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors">
                 Voir tout →
             </a>
         </div>
         {% if search_zones %}
         <div class="space-y-3">
             {% for zone in search_zones %}
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors">
                 <div>
-                    <p class="font-medium text-gray-900">{{ zone.city }}</p>
-                    <p class="text-sm text-gray-500">{{ zone.radius_km }} km • {{ zone.get_property_type_display }}</p>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ zone.city }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ zone.radius_km }} km • {{ zone.get_property_type_display }}</p>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-gray-500 text-center py-8">
-            Aucune zone de recherche. <a href="{% url 'property_tracker:create_search_zone' %}" class="text-blue-600 hover:text-blue-700">Créer une zone</a>
+        <p class="text-gray-500 dark:text-gray-400 text-center py-8">
+            Aucune zone de recherche. <a href="{% url 'property_tracker:create_search_zone' %}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Créer une zone</a>
         </p>
         {% endif %}
     </div>
