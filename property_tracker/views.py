@@ -79,7 +79,6 @@ def dashboard(request):
     }
 
     context = {
-        'search_zones': search_zones,
         'active_listings_count': active_listings_count,
         'inactive_listings_count': inactive_listings_count,
         'min_price': price_stats['min_price'],

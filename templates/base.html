@@ -52,10 +52,6 @@
                            class="{% if request.resolver_match.url_name == 'listings' %}border-blue-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
                             Annonces
                         </a>
-                        <a href="{% url 'property_tracker:search_zones' %}"
-                           class="{% if request.resolver_match.url_name == 'search_zones' %}border-blue-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-100{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
-                            Zones de recherche
-                        </a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">

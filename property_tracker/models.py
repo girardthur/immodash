@@ -51,6 +51,36 @@ def save_user_search_preferences(sender, instance, **kwargs):
         instance.search_preferences.save()
 
 
+@receiver(post_save, sender=UserSearchPreferences)
+def sync_search_zone_from_preferences(sender, instance, **kwargs):
+    """
+    Synchronise automatiquement une SearchZone unique avec les UserSearchPreferences
+    Crée ou met à jour la SearchZone quand les préférences sont modifiées
+    """
+    # Désactiver toutes les autres zones de recherche de l'utilisateur
+    SearchZone.objects.filter(user=instance.user).update(is_active=False)
+
+    # Récupérer la première SearchZone ou en créer une nouvelle
+    search_zones = SearchZone.objects.filter(user=instance.user)
+    if search_zones.exists():
+        # Mettre à jour la première zone existante
+        search_zone = search_zones.first()
+        search_zone.city = instance.city
+        search_zone.radius_km = instance.radius_km
+        search_zone.property_type = instance.property_type
+        search_zone.is_active = True
+        search_zone.save()
+    else:
+        # Créer une nouvelle SearchZone
+        SearchZone.objects.create(
+            user=instance.user,
+            city=instance.city,
+            radius_km=instance.radius_km,
+            property_type=instance.property_type,
+            is_active=True,
+        )
+
+
 class SearchZone(models.Model):
     """Zone de recherche d'un utilisateur"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='search_zones')

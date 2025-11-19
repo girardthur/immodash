@@ -124,10 +124,11 @@ class LeboncoinScraper(BaseScraper):
             }
 
             # Filtres supplémentaires selon le type de propriété
+            # La librairie lbc attend une liste pour real_estate_type
             if self.search_zone.property_type == PropertyType.APARTMENT:
-                search_params['real_estate_type'] = 1  # 1 = appartement
+                search_params['real_estate_type'] = [1]  # 1 = appartement
             elif self.search_zone.property_type == PropertyType.HOUSE:
-                search_params['real_estate_type'] = 2  # 2 = maison
+                search_params['real_estate_type'] = [2]  # 2 = maison
             # BOTH = pas de filtre sur le type
 
             # Effectuer la recherche
