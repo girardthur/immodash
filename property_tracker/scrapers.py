@@ -17,28 +17,70 @@ logger = logging.getLogger(__name__)
 def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
     """
     Géocode une ville en utilisant Nominatim (OpenStreetMap)
+    Accepte "Ville" ou "Ville CodePostal" (ex: "Paris" ou "Paris 75001")
     Retourne (latitude, longitude) ou None si la ville n'est pas trouvée
     Cache les résultats pour 30 jours
     """
-    # Vérifier le cache
-    cache_key = f"geocode_{city_name.lower()}"
+    import re
+    import time
+
+    # Créer une clé de cache valide (sans espaces ni caractères spéciaux)
+    cache_key = f"geocode_{city_name.lower().replace(' ', '_').replace('-', '_')}"
     cached_coords = cache.get(cache_key)
     if cached_coords:
         logger.info(f"Coordonnées de {city_name} récupérées du cache: {cached_coords}")
         return cached_coords
 
     try:
+        # Parser le nom de ville pour extraire un éventuel code postal
+        # Formats acceptés: "Paris", "Paris 75001", "Saint-Martin 44000"
+        parts = city_name.strip().split()
+        postal_code = None
+        city_only = city_name
+
+        # Chercher un code postal (5 chiffres) dans les derniers mots
+        if len(parts) > 1:
+            # Vérifier si le dernier élément est un code postal
+            if re.match(r'^\d{5}$', parts[-1]):
+                postal_code = parts[-1]
+                city_only = ' '.join(parts[:-1])
+                logger.info(f"Code postal détecté: {postal_code} pour la ville {city_only}")
+
+        # Construire la requête Nominatim
+        # Si code postal présent, rechercher par code postal d'abord (plus précis)
+        if postal_code:
+            search_query = f"{postal_code}, France"
+        else:
+            search_query = f"{city_only}, France"
+
         # Utiliser Nominatim (OpenStreetMap) - gratuit et sans clé API
         url = "https://nominatim.openstreetmap.org/search"
         params = {
-            'q': city_name,
+            'q': search_query,
             'format': 'json',
             'limit': 1,
             'countrycodes': 'fr',  # Limiter à la France
+            'addressdetails': 1,  # Obtenir les détails d'adresse
         }
         headers = {
             'User-Agent': 'Immodash Property Tracker (https://github.com/girardthur/immodash)'
         }
+
+        # Respecter le rate limit de Nominatim (max 1 requête/seconde)
+        # Vérifier si on doit attendre
+        last_request_key = 'nominatim_last_request_time'
+        last_request_time = cache.get(last_request_key, 0)
+        current_time = time.time()
+        time_since_last_request = current_time - last_request_time
+
+        if time_since_last_request < 1.0:
+            # Attendre le temps nécessaire pour respecter le rate limit
+            sleep_time = 1.0 - time_since_last_request
+            logger.info(f"Rate limiting: attente de {sleep_time:.2f}s avant requête Nominatim")
+            time.sleep(sleep_time)
+
+        # Mettre à jour le timestamp de la dernière requête
+        cache.set(last_request_key, time.time(), 10)
 
         response = requests.get(url, params=params, headers=headers, timeout=10)
         response.raise_for_status()
@@ -52,14 +94,16 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
             # Mettre en cache pour 30 jours
             cache.set(cache_key, coords, 60 * 60 * 24 * 30)
 
-            logger.info(f"Ville {city_name} géocodée: lat={lat}, lon={lon}")
+            # Log avec détails
+            address_info = data[0].get('display_name', '')
+            logger.info(f"Ville '{city_name}' géocodée: lat={lat}, lon={lon} ({address_info})")
             return coords
         else:
-            logger.warning(f"Ville {city_name} introuvable")
+            logger.warning(f"Ville '{city_name}' introuvable via Nominatim")
             return None
 
     except Exception as e:
-        logger.error(f"Erreur lors du géocodage de {city_name}: {e}")
+        logger.error(f"Erreur lors du géocodage de '{city_name}': {e}")
         return None
 
 
