@@ -2,14 +2,65 @@
 Scrapers pour récupérer les annonces immobilières depuis Leboncoin
 """
 import logging
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from decimal import Decimal
+import requests
 from lbc import Client, Category, City
 from django.utils import timezone
+from django.core.cache import cache
 
 from .models import SearchZone, Listing, PriceHistory, Source, PropertyType
 
 logger = logging.getLogger(__name__)
+
+
+def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
+    """
+    Géocode une ville en utilisant Nominatim (OpenStreetMap)
+    Retourne (latitude, longitude) ou None si la ville n'est pas trouvée
+    Cache les résultats pour 30 jours
+    """
+    # Vérifier le cache
+    cache_key = f"geocode_{city_name.lower()}"
+    cached_coords = cache.get(cache_key)
+    if cached_coords:
+        logger.info(f"Coordonnées de {city_name} récupérées du cache: {cached_coords}")
+        return cached_coords
+
+    try:
+        # Utiliser Nominatim (OpenStreetMap) - gratuit et sans clé API
+        url = "https://nominatim.openstreetmap.org/search"
+        params = {
+            'q': city_name,
+            'format': 'json',
+            'limit': 1,
+            'countrycodes': 'fr',  # Limiter à la France
+        }
+        headers = {
+            'User-Agent': 'Immodash Property Tracker (https://github.com/girardthur/immodash)'
+        }
+
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+        response.raise_for_status()
+
+        data = response.json()
+        if data and len(data) > 0:
+            lat = float(data[0]['lat'])
+            lon = float(data[0]['lon'])
+            coords = (lat, lon)
+
+            # Mettre en cache pour 30 jours
+            cache.set(cache_key, coords, 60 * 60 * 24 * 30)
+
+            logger.info(f"Ville {city_name} géocodée: lat={lat}, lon={lon}")
+            return coords
+        else:
+            logger.warning(f"Ville {city_name} introuvable")
+            return None
+
+    except Exception as e:
+        logger.error(f"Erreur lors du géocodage de {city_name}: {e}")
+        return None
 
 
 class BaseScraper:
@@ -114,12 +165,23 @@ class LeboncoinScraper(BaseScraper):
             # Utiliser la catégorie ventes immobilières
             category = Category.IMMOBILIER_VENTES_IMMOBILIERES
 
+            # Géocoder la ville pour obtenir les coordonnées
+            coords = geocode_city(self.search_zone.city)
+            if not coords:
+                logger.error(f"Impossible de géocoder la ville {self.search_zone.city}")
+                return []
+
+            lat, lon = coords
+
+            # Créer l'objet City avec les coordonnées et le rayon
+            # Le rayon doit être en mètres
+            radius_meters = self.search_zone.radius_km * 1000
+            location = City(lat=lat, lng=lon, radius=radius_meters, city=self.search_zone.city)
+
             # Construire les paramètres de recherche
-            # On utilise le nom de la ville comme texte de recherche
-            # Le rayon en mètres (lbc utilise des mètres par défaut)
             search_params = {
                 'category': category,
-                'text': self.search_zone.city,
+                'locations': location,  # Filtrage géographique précis
                 'limit': 100,  # Limite par page
             }
 
@@ -130,6 +192,8 @@ class LeboncoinScraper(BaseScraper):
             elif self.search_zone.property_type == PropertyType.HOUSE:
                 search_params['real_estate_type'] = [2]  # 2 = maison
             # BOTH = pas de filtre sur le type
+
+            logger.info(f"Recherche Leboncoin: {self.search_zone.city} (lat={lat:.4f}, lon={lon:.4f}, rayon={self.search_zone.radius_km}km)")
 
             # Effectuer la recherche
             search_result = client.search(**search_params)
