@@ -8,6 +8,7 @@ from django.dispatch import receiver
 class PropertyType(models.TextChoices):
     APARTMENT = 'apartment', 'Appartement'
     HOUSE = 'house', 'Maison'
+    PARKING = 'parking', 'Place de parking'
     BOTH = 'both', 'Appartement et Maison'
 
 

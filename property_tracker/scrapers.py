@@ -231,10 +231,13 @@ class LeboncoinScraper(BaseScraper):
 
             # Filtres supplémentaires selon le type de propriété
             # La librairie lbc attend une liste pour real_estate_type
-            if self.search_zone.property_type == PropertyType.APARTMENT:
-                search_params['real_estate_type'] = [1]  # 1 = appartement
-            elif self.search_zone.property_type == PropertyType.HOUSE:
-                search_params['real_estate_type'] = [2]  # 2 = maison
+            # Mapping: 1 = maison, 2 = appartement, 3 = parking
+            if self.search_zone.property_type == PropertyType.HOUSE:
+                search_params['real_estate_type'] = [1]  # 1 = maison
+            elif self.search_zone.property_type == PropertyType.APARTMENT:
+                search_params['real_estate_type'] = [2]  # 2 = appartement
+            elif self.search_zone.property_type == PropertyType.PARKING:
+                search_params['real_estate_type'] = [3]  # 3 = parking
             # BOTH = pas de filtre sur le type
 
             logger.info(f"Recherche Leboncoin: {self.search_zone.city} (lat={lat:.4f}, lon={lon:.4f}, rayon={self.search_zone.radius_km}km)")
@@ -274,11 +277,13 @@ class LeboncoinScraper(BaseScraper):
             # Extraire les attributs de l'annonce
             for attr in ad.attributes:
                 if attr.key == 'real_estate_type':
-                    # 1 = appartement, 2 = maison
-                    if attr.value == '2':
+                    # Mapping correct: 1 = maison, 2 = appartement, 3 = parking
+                    if attr.value == '1':
                         property_type = PropertyType.HOUSE
-                    elif attr.value == '1':
+                    elif attr.value == '2':
                         property_type = PropertyType.APARTMENT
+                    elif attr.value == '3':
+                        property_type = PropertyType.PARKING
                 elif attr.key == 'square':
                     try:
                         surface = float(attr.value) if attr.value else None
