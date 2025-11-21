@@ -108,6 +108,34 @@
                             </div>
                             {% endif %}
                         </div>
+
+                        <!-- Informations de changement de prix -->
+                        {% if listing.has_price_changed and listing.previous_price %}
+                        <div class="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                            <div class="flex items-center gap-2 mb-2">
+                                <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                </svg>
+                                <span class="text-sm font-semibold text-orange-900 dark:text-orange-300">Changement de prix détecté</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <p class="text-orange-700 dark:text-orange-400">Prix précédent</p>
+                                    <p class="font-semibold text-orange-900 dark:text-orange-300">{{ listing.previous_price|floatformat:0 }} €</p>
+                                </div>
+                                <div>
+                                    <p class="text-orange-700 dark:text-orange-400">Variation</p>
+                                    <p class="font-semibold text-orange-900 dark:text-orange-300">
+                                        {% if listing.last_price_change_percent > 0 %}+{% endif %}{{ listing.last_price_change_percent|floatformat:1 }}%
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-orange-700 dark:text-orange-400">Date du changement</p>
+                                    <p class="font-semibold text-orange-900 dark:text-orange-300">{{ listing.last_price_change_date|date:"d/m/Y" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
 
                     <div class="ml-4">

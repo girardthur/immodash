@@ -99,8 +99,8 @@ def listings(request):
     # Récupérer les zones de recherche de l'utilisateur
     search_zones = request.user.search_zones.filter(is_active=True)
 
-    # Query de base
-    listings_query = Listing.objects.filter(search_zone__in=search_zones).select_related('search_zone')
+    # Query de base avec prefetch de l'historique des prix pour éviter N+1 queries
+    listings_query = Listing.objects.filter(search_zone__in=search_zones).select_related('search_zone').prefetch_related('price_history')
 
     # Filtres
     status_filter = request.GET.get('status', 'all')

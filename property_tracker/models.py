@@ -201,6 +201,21 @@ class Listing(models.Model):
             return (self.sold_at - self.first_seen_at).days
         return (timezone.now() - self.first_seen_at).days
 
+    @property
+    def previous_price(self):
+        """Retourne le prix précédent (avant le dernier changement)"""
+        if not self.has_price_changed:
+            return None
+
+        # Récupérer les 2 dernières entrées de l'historique
+        history = self.price_history.order_by('-detected_at')[:2]
+
+        if len(history) >= 2:
+            # L'avant-dernier prix est le prix précédent
+            return history[1].price
+
+        return None
+
 
 class PriceHistory(models.Model):
     """Historique des changements de prix d'une annonce"""
