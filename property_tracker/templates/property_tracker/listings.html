@@ -48,6 +48,7 @@
                 <select name="sort" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         onchange="this.form.submit()">
                     <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Plus récent</option>
+                    <option value="price_change" {% if sort_by == 'price_change' %}selected{% endif %}>Changement de prix récent</option>
                     <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Prix croissant</option>
                     <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
                     <option value="price_per_sqm_asc" {% if sort_by == 'price_per_sqm_asc' %}selected{% endif %}>Prix/m² croissant</option>

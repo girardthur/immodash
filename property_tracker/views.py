@@ -122,6 +122,9 @@ def listings(request):
     if sort_by == 'recent':
         # Trier par date la plus récente (création ou changement de prix)
         listings_query = listings_query.order_by('-updated_at', '-last_price_change_date')
+    elif sort_by == 'price_change':
+        # Trier par date de changement de prix (plus récent en premier, NULL à la fin)
+        listings_query = listings_query.order_by(F('last_price_change_date').desc(nulls_last=True))
     elif sort_by == 'price_asc':
         listings_query = listings_query.order_by('current_price')
     elif sort_by == 'price_desc':
