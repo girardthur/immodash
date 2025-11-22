@@ -264,25 +264,25 @@ def settings(request):
     preferences, created = UserSearchPreferences.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
+        # Récupérer les anciennes valeurs AVANT de créer le formulaire
+        # (form.is_valid() modifie l'instance)
+        old_city = preferences.city if not created else None
+        old_radius = preferences.radius_km if not created else None
+        old_property_type = preferences.property_type if not created else None
+
         form = UserSearchPreferencesForm(request.POST, instance=preferences)
         if form.is_valid():
+            # Sauvegarder les nouvelles préférences
+            form.save()
+
             # Vérifier si les préférences ont changé
             has_changed = False
             if not created:
-                old_city = preferences.city
-                old_radius = preferences.radius_km
-                old_property_type = preferences.property_type
-
-                # Sauvegarder les nouvelles préférences
-                form.save()
-
-                # Vérifier si quelque chose a changé
                 if (old_city != preferences.city or
                     old_radius != preferences.radius_km or
                     old_property_type != preferences.property_type):
                     has_changed = True
             else:
-                form.save()
                 has_changed = True
 
             # Si les préférences ont changé, supprimer les anciennes annonces et lancer un scraping
