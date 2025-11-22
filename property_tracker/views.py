@@ -285,14 +285,12 @@ def settings(request):
                 form.save()
                 has_changed = True
 
-            # Si les préférences ont changé, désactiver les anciennes annonces et lancer un scraping
+            # Si les préférences ont changé, supprimer les anciennes annonces et lancer un scraping
             if has_changed:
-                # Désactiver toutes les annonces existantes de l'utilisateur
-                from django.utils import timezone
-                inactive_count = Listing.objects.filter(
-                    search_zone__user=request.user,
-                    is_active=True
-                ).update(is_active=False, sold_at=timezone.now())
+                # Supprimer toutes les annonces existantes de l'utilisateur
+                deleted_count, _ = Listing.objects.filter(
+                    search_zone__user=request.user
+                ).delete()
 
                 # Lancer le scraping de la nouvelle zone
                 from .tasks import scrape_single_zone
@@ -304,7 +302,7 @@ def settings(request):
 
                     messages.success(
                         request,
-                        f'Vos préférences ont été mises à jour! {inactive_count} anciennes annonces ont été archivées. '
+                        f'Vos préférences ont été mises à jour! {deleted_count} anciennes annonces ont été supprimées. '
                         f'Le scraping des nouvelles annonces est en cours...'
                     )
                 else:
