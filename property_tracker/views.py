@@ -266,8 +266,52 @@ def settings(request):
     if request.method == 'POST':
         form = UserSearchPreferencesForm(request.POST, instance=preferences)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Vos préférences de recherche ont été mises à jour avec succès!')
+            # Vérifier si les préférences ont changé
+            has_changed = False
+            if not created:
+                old_city = preferences.city
+                old_radius = preferences.radius_km
+                old_property_type = preferences.property_type
+
+                # Sauvegarder les nouvelles préférences
+                form.save()
+
+                # Vérifier si quelque chose a changé
+                if (old_city != preferences.city or
+                    old_radius != preferences.radius_km or
+                    old_property_type != preferences.property_type):
+                    has_changed = True
+            else:
+                form.save()
+                has_changed = True
+
+            # Si les préférences ont changé, désactiver les anciennes annonces et lancer un scraping
+            if has_changed:
+                # Désactiver toutes les annonces existantes de l'utilisateur
+                from django.utils import timezone
+                inactive_count = Listing.objects.filter(
+                    search_zone__user=request.user,
+                    is_active=True
+                ).update(is_active=False, sold_at=timezone.now())
+
+                # Lancer le scraping de la nouvelle zone
+                from .tasks import scrape_single_zone
+                search_zone = request.user.search_zones.filter(is_active=True).first()
+
+                if search_zone:
+                    # Lancer la tâche Celery en arrière-plan
+                    scrape_single_zone.delay(search_zone.id)
+
+                    messages.success(
+                        request,
+                        f'Vos préférences ont été mises à jour! {inactive_count} anciennes annonces ont été archivées. '
+                        f'Le scraping des nouvelles annonces est en cours...'
+                    )
+                else:
+                    messages.success(request, 'Vos préférences de recherche ont été mises à jour avec succès!')
+            else:
+                messages.info(request, 'Aucune modification détectée.')
+
             return redirect('property_tracker:settings')
         else:
             messages.error(request, 'Erreur lors de la mise à jour de vos préférences.')
