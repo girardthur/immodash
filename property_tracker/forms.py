@@ -11,7 +11,7 @@ class UserSearchPreferencesForm(forms.ModelForm):
         widgets = {
             'city': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ex: Paris, Lyon, Marseille...'
+                'placeholder': 'Ex: Paris, Lyon 69001, Saint-Martin 44000...'
             }),
             'radius_km': forms.NumberInput(attrs={
                 'class': 'form-control',
@@ -29,7 +29,7 @@ class UserSearchPreferencesForm(forms.ModelForm):
             'property_type': 'Type de bien recherché',
         }
         help_texts = {
-            'city': 'Entrez le nom de la ville où vous souhaitez rechercher des biens',
+            'city': 'Entrez le nom de la ville (optionnel: ajoutez le code postal pour plus de précision, ex: "Saint-Martin 44000")',
             'radius_km': 'Rayon de recherche autour de la ville (en kilomètres)',
             'property_type': 'Sélectionnez le type de bien que vous recherchez',
         }

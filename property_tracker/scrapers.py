@@ -2,14 +2,109 @@
 Scrapers pour récupérer les annonces immobilières depuis Leboncoin
 """
 import logging
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from decimal import Decimal
+import requests
 from lbc import Client, Category, City
 from django.utils import timezone
+from django.core.cache import cache
 
 from .models import SearchZone, Listing, PriceHistory, Source, PropertyType
 
 logger = logging.getLogger(__name__)
+
+
+def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
+    """
+    Géocode une ville en utilisant Nominatim (OpenStreetMap)
+    Accepte "Ville" ou "Ville CodePostal" (ex: "Paris" ou "Paris 75001")
+    Retourne (latitude, longitude) ou None si la ville n'est pas trouvée
+    Cache les résultats pour 30 jours
+    """
+    import re
+    import time
+
+    # Créer une clé de cache valide (sans espaces ni caractères spéciaux)
+    cache_key = f"geocode_{city_name.lower().replace(' ', '_').replace('-', '_')}"
+    cached_coords = cache.get(cache_key)
+    if cached_coords:
+        logger.info(f"Coordonnées de {city_name} récupérées du cache: {cached_coords}")
+        return cached_coords
+
+    try:
+        # Parser le nom de ville pour extraire un éventuel code postal
+        # Formats acceptés: "Paris", "Paris 75001", "Saint-Martin 44000"
+        parts = city_name.strip().split()
+        postal_code = None
+        city_only = city_name
+
+        # Chercher un code postal (5 chiffres) dans les derniers mots
+        if len(parts) > 1:
+            # Vérifier si le dernier élément est un code postal
+            if re.match(r'^\d{5}$', parts[-1]):
+                postal_code = parts[-1]
+                city_only = ' '.join(parts[:-1])
+                logger.info(f"Code postal détecté: {postal_code} pour la ville {city_only}")
+
+        # Construire la requête Nominatim
+        # Si code postal présent, rechercher par code postal d'abord (plus précis)
+        if postal_code:
+            search_query = f"{postal_code}, France"
+        else:
+            search_query = f"{city_only}, France"
+
+        # Utiliser Nominatim (OpenStreetMap) - gratuit et sans clé API
+        url = "https://nominatim.openstreetmap.org/search"
+        params = {
+            'q': search_query,
+            'format': 'json',
+            'limit': 1,
+            'countrycodes': 'fr',  # Limiter à la France
+            'addressdetails': 1,  # Obtenir les détails d'adresse
+        }
+        headers = {
+            'User-Agent': 'Immodash Property Tracker (https://github.com/girardthur/immodash)'
+        }
+
+        # Respecter le rate limit de Nominatim (max 1 requête/seconde)
+        # Vérifier si on doit attendre
+        last_request_key = 'nominatim_last_request_time'
+        last_request_time = cache.get(last_request_key, 0)
+        current_time = time.time()
+        time_since_last_request = current_time - last_request_time
+
+        if time_since_last_request < 1.0:
+            # Attendre le temps nécessaire pour respecter le rate limit
+            sleep_time = 1.0 - time_since_last_request
+            logger.info(f"Rate limiting: attente de {sleep_time:.2f}s avant requête Nominatim")
+            time.sleep(sleep_time)
+
+        # Mettre à jour le timestamp de la dernière requête
+        cache.set(last_request_key, time.time(), 10)
+
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+        response.raise_for_status()
+
+        data = response.json()
+        if data and len(data) > 0:
+            lat = float(data[0]['lat'])
+            lon = float(data[0]['lon'])
+            coords = (lat, lon)
+
+            # Mettre en cache pour 30 jours
+            cache.set(cache_key, coords, 60 * 60 * 24 * 30)
+
+            # Log avec détails
+            address_info = data[0].get('display_name', '')
+            logger.info(f"Ville '{city_name}' géocodée: lat={lat}, lon={lon} ({address_info})")
+            return coords
+        else:
+            logger.warning(f"Ville '{city_name}' introuvable via Nominatim")
+            return None
+
+    except Exception as e:
+        logger.error(f"Erreur lors du géocodage de '{city_name}': {e}")
+        return None
 
 
 class BaseScraper:
@@ -114,21 +209,36 @@ class LeboncoinScraper(BaseScraper):
             # Utiliser la catégorie ventes immobilières
             category = Category.IMMOBILIER_VENTES_IMMOBILIERES
 
+            # Géocoder la ville pour obtenir les coordonnées
+            coords = geocode_city(self.search_zone.city)
+            if not coords:
+                logger.error(f"Impossible de géocoder la ville {self.search_zone.city}")
+                return []
+
+            lat, lon = coords
+
+            # Créer l'objet City avec les coordonnées et le rayon
+            # Le rayon doit être en mètres
+            radius_meters = self.search_zone.radius_km * 1000
+            location = City(lat=lat, lng=lon, radius=radius_meters, city=self.search_zone.city)
+
             # Construire les paramètres de recherche
-            # On utilise le nom de la ville comme texte de recherche
-            # Le rayon en mètres (lbc utilise des mètres par défaut)
             search_params = {
                 'category': category,
-                'text': self.search_zone.city,
+                'locations': location,  # Filtrage géographique précis
                 'limit': 100,  # Limite par page
             }
 
             # Filtres supplémentaires selon le type de propriété
-            if self.search_zone.property_type == PropertyType.APARTMENT:
-                search_params['real_estate_type'] = 1  # 1 = appartement
-            elif self.search_zone.property_type == PropertyType.HOUSE:
-                search_params['real_estate_type'] = 2  # 2 = maison
+            # La librairie lbc attend une liste pour real_estate_type
+            # Mapping: 1 = maison, 2 = appartement
+            if self.search_zone.property_type == PropertyType.HOUSE:
+                search_params['real_estate_type'] = [1]  # 1 = maison
+            elif self.search_zone.property_type == PropertyType.APARTMENT:
+                search_params['real_estate_type'] = [2]  # 2 = appartement
             # BOTH = pas de filtre sur le type
+
+            logger.info(f"Recherche Leboncoin: {self.search_zone.city} (lat={lat:.4f}, lon={lon:.4f}, rayon={self.search_zone.radius_km}km)")
 
             # Effectuer la recherche
             search_result = client.search(**search_params)
@@ -165,10 +275,10 @@ class LeboncoinScraper(BaseScraper):
             # Extraire les attributs de l'annonce
             for attr in ad.attributes:
                 if attr.key == 'real_estate_type':
-                    # 1 = appartement, 2 = maison
-                    if attr.value == '2':
+                    # Mapping correct: 1 = maison, 2 = appartement
+                    if attr.value == '1':
                         property_type = PropertyType.HOUSE
-                    elif attr.value == '1':
+                    elif attr.value == '2':
                         property_type = PropertyType.APARTMENT
                 elif attr.key == 'square':
                     try:

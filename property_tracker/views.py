@@ -79,7 +79,6 @@ def dashboard(request):
     }
 
     context = {
-        'search_zones': search_zones,
         'active_listings_count': active_listings_count,
         'inactive_listings_count': inactive_listings_count,
         'min_price': price_stats['min_price'],
@@ -100,8 +99,8 @@ def listings(request):
     # Récupérer les zones de recherche de l'utilisateur
     search_zones = request.user.search_zones.filter(is_active=True)
 
-    # Query de base
-    listings_query = Listing.objects.filter(search_zone__in=search_zones).select_related('search_zone')
+    # Query de base avec prefetch de l'historique des prix pour éviter N+1 queries
+    listings_query = Listing.objects.filter(search_zone__in=search_zones).select_related('search_zone').prefetch_related('price_history')
 
     # Filtres
     status_filter = request.GET.get('status', 'all')
@@ -123,6 +122,9 @@ def listings(request):
     if sort_by == 'recent':
         # Trier par date la plus récente (création ou changement de prix)
         listings_query = listings_query.order_by('-updated_at', '-last_price_change_date')
+    elif sort_by == 'price_change':
+        # Trier par date de changement de prix (plus récent en premier, NULL à la fin)
+        listings_query = listings_query.order_by(F('last_price_change_date').desc(nulls_last=True))
     elif sort_by == 'price_asc':
         listings_query = listings_query.order_by('current_price')
     elif sort_by == 'price_desc':
@@ -262,10 +264,55 @@ def settings(request):
     preferences, created = UserSearchPreferences.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
+        # Récupérer les anciennes valeurs AVANT de créer le formulaire
+        # (form.is_valid() modifie l'instance)
+        old_city = preferences.city if not created else None
+        old_radius = preferences.radius_km if not created else None
+        old_property_type = preferences.property_type if not created else None
+
         form = UserSearchPreferencesForm(request.POST, instance=preferences)
         if form.is_valid():
+            # Sauvegarder les nouvelles préférences
             form.save()
-            messages.success(request, 'Vos préférences de recherche ont été mises à jour avec succès!')
+
+            # Vérifier si les préférences ont changé
+            has_changed = False
+            if not created:
+                if (old_city != preferences.city or
+                    old_radius != preferences.radius_km or
+                    old_property_type != preferences.property_type):
+                    has_changed = True
+            else:
+                has_changed = True
+
+            # Si les préférences ont changé, supprimer les anciennes annonces et lancer un scraping
+            if has_changed:
+                # Supprimer toutes les annonces existantes de l'utilisateur
+                deleted_count, _ = Listing.objects.filter(
+                    search_zone__user=request.user
+                ).delete()
+
+                # Lancer le scraping de la nouvelle zone
+                from .tasks import scrape_single_zone
+                search_zone = request.user.search_zones.filter(is_active=True).first()
+
+                if search_zone:
+                    # Lancer la tâche Celery en arrière-plan
+                    scrape_single_zone.delay(search_zone.id)
+
+                    messages.success(
+                        request,
+                        f'Vos préférences ont été mises à jour! {deleted_count} anciennes annonces ont été supprimées. '
+                        f'Le scraping des nouvelles annonces est en cours... Vous allez être redirigé vers la page des annonces dans quelques instants.'
+                    )
+                    # Rediriger vers la page des annonces pour voir les nouvelles annonces
+                    # On ajoute un paramètre pour déclencher un auto-refresh après quelques secondes
+                    return redirect('property_tracker:listings')
+                else:
+                    messages.success(request, 'Vos préférences de recherche ont été mises à jour avec succès!')
+            else:
+                messages.info(request, 'Aucune modification détectée.')
+
             return redirect('property_tracker:settings')
         else:
             messages.error(request, 'Erreur lors de la mise à jour de vos préférences.')
