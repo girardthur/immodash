@@ -15,6 +15,10 @@ urlpatterns = [
     # Annonces
     path('listings/', views.listings, name='listings'),
     path('listings/<int:listing_id>/price-history/', views.listing_price_history, name='listing_price_history'),
+    path('listings/<int:listing_id>/toggle-favorite/', views.toggle_favorite, name='toggle_favorite'),
+
+    # Favoris
+    path('favorites/<int:listing_id>/remove/', views.remove_favorite, name='remove_favorite'),
 
     # Zones de recherche (DEPRECATED - maintenant géré via UserSearchPreferences dans Settings)
     # path('search-zones/', views.search_zones, name='search_zones'),

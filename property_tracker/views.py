@@ -78,6 +78,12 @@ def dashboard(request):
         'prices': [float(entry['avg_price_per_sqm']) for entry in avg_price_per_sqm_by_rooms]
     }
 
+    # Récupérer les annonces favorites de l'utilisateur
+    from .models import Favorite
+    favorite_listings = Listing.objects.filter(
+        favorited_by__user=request.user
+    ).select_related().prefetch_related('search_zones')[:10]  # Limiter à 10 favoris
+
     context = {
         'active_listings_count': active_listings_count,
         'inactive_listings_count': inactive_listings_count,
@@ -86,6 +92,7 @@ def dashboard(request):
         'avg_days_on_market': round(avg_days_on_market, 1),
         'evolution_data': json.dumps(evolution_data),
         'rooms_data': json.dumps(rooms_data),
+        'favorite_listings': favorite_listings,
     }
 
     return render(request, 'property_tracker/dashboard.html', context)
@@ -140,12 +147,17 @@ def listings(request):
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
+    # Récupérer les IDs des annonces en favori pour cet utilisateur
+    from .models import Favorite
+    favorite_ids = set(Favorite.objects.filter(user=request.user).values_list('listing_id', flat=True))
+
     context = {
         'page_obj': page_obj,
         'status_filter': status_filter,
         'source_filter': source_filter,
         'property_type_filter': property_type_filter,
         'sort_by': sort_by,
+        'favorite_ids': favorite_ids,
     }
 
     # Si c'est une requête HTMX, renvoyer seulement la partie de la liste
@@ -323,3 +335,53 @@ def settings(request):
     }
 
     return render(request, 'property_tracker/settings.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_favorite(request, listing_id):
+    """
+    Ajouter ou retirer une annonce des favoris (depuis la page listings)
+    """
+    from .models import Favorite
+
+    listing = get_object_or_404(Listing, id=listing_id, search_zones__user=request.user)
+
+    # Vérifier si l'annonce est déjà en favori
+    favorite, created = Favorite.objects.get_or_create(user=request.user, listing=listing)
+
+    if not created:
+        # Si le favori existait déjà, le supprimer
+        favorite.delete()
+        is_favorite = False
+        message = "Annonce retirée des favoris"
+    else:
+        is_favorite = True
+        message = "Annonce ajoutée aux favoris"
+
+    # Retourner une réponse JSON pour HTMX
+    return JsonResponse({
+        'success': True,
+        'is_favorite': is_favorite,
+        'message': message
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def remove_favorite(request, listing_id):
+    """
+    Retirer une annonce des favoris (depuis le dashboard)
+    """
+    from .models import Favorite
+
+    listing = get_object_or_404(Listing, id=listing_id)
+
+    try:
+        favorite = Favorite.objects.get(user=request.user, listing=listing)
+        favorite.delete()
+        messages.success(request, f'"{listing.title}" retiré des favoris')
+    except Favorite.DoesNotExist:
+        messages.error(request, "Cette annonce n'est pas dans vos favoris")
+
+    return redirect('property_tracker:dashboard')

@@ -246,3 +246,22 @@ class PriceHistory(models.Model):
 
     def __str__(self):
         return f"{self.listing.title} - {self.price}€ ({self.detected_at})"
+
+
+class Favorite(models.Model):
+    """Annonce favorite d'un utilisateur"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ajouté le')
+
+    class Meta:
+        verbose_name = 'Favori'
+        verbose_name_plural = 'Favoris'
+        ordering = ['-created_at']
+        unique_together = ['user', 'listing']  # Un utilisateur ne peut pas ajouter 2x le même favori
+        indexes = [
+            models.Index(fields=['user', 'listing']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.listing.title}"
