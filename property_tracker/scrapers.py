@@ -217,10 +217,21 @@ class LeboncoinScraper(BaseScraper):
 
             lat, lon = coords
 
+            # Extraire le nom de la ville sans le code postal
+            # Format accepté: "Ville" ou "Ville 97310"
+            import re
+            city_parts = self.search_zone.city.strip().split()
+            city_name = self.search_zone.city
+
+            # Si le dernier élément est un code postal (5 chiffres), l'enlever
+            if len(city_parts) > 1 and re.match(r'^\d{5}$', city_parts[-1]):
+                city_name = ' '.join(city_parts[:-1])
+                logger.info(f"Utilisation du nom de ville sans code postal: '{city_name}' (original: '{self.search_zone.city}')")
+
             # Créer l'objet City avec les coordonnées et le rayon
             # Le rayon doit être en mètres
             radius_meters = self.search_zone.radius_km * 1000
-            location = City(lat=lat, lng=lon, radius=radius_meters, city=self.search_zone.city)
+            location = City(lat=lat, lng=lon, radius=radius_meters, city=city_name)
 
             # Construire les paramètres de recherche
             search_params = {
