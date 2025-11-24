@@ -170,14 +170,24 @@
                     </div>
 
                     <div class="ml-4 flex gap-2"
-                         x-data="{ isFavorite: {% if listing.id in favorite_ids %}true{% else %}false{% endif %} }">
+                         x-data="{
+                            isFavorite: {% if listing.id in favorite_ids %}true{% else %}false{% endif %},
+                            toggleFav() {
+                                toggleFavorite({{ listing.id }}, (newState) => {
+                                    this.isFavorite = newState;
+                                });
+                            }
+                         }">
                         <!-- Bouton Favori -->
-                        <button @click="toggleFavorite({{ listing.id }}, $el)"
-                                class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium transition-colors"
-                                :class="isFavorite ? 'text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-900/20' : 'text-gray-400 hover:text-red-500 bg-white dark:bg-gray-700'"
+                        <button @click="toggleFav()"
+                                class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium transition-all duration-200"
+                                :class="isFavorite ? 'text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-900/20 scale-100' : 'text-gray-400 hover:text-red-500 bg-white dark:bg-gray-700'"
                                 :title="isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'">
                             <!-- Heart icon (filled if favorite) -->
-                            <svg class="w-5 h-5" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 transition-transform duration-200"
+                                 :class="isFavorite ? 'scale-110' : 'scale-100'"
+                                 :fill="isFavorite ? 'currentColor' : 'none'"
+                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
                         </button>
@@ -307,7 +317,7 @@ function loadPriceHistory(listingId) {
         });
 }
 
-function toggleFavorite(listingId, element) {
+function toggleFavorite(listingId, callback) {
     // Récupérer le CSRF token
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
                       document.querySelector('meta[name="csrf-token"]')?.content ||
@@ -325,16 +335,52 @@ function toggleFavorite(listingId, element) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Update Alpine.js state - find the parent Alpine component
-            const alpineEl = element.closest('[x-data]');
-            if (alpineEl && alpineEl.__x) {
-                alpineEl.__x.$data.isFavorite = data.is_favorite;
-            }
+            // Mettre à jour l'état via le callback
+            callback(data.is_favorite);
+
+            // Afficher une notification
+            showToast(data.message, data.is_favorite ? 'success' : 'info');
         }
     })
     .catch(error => {
         console.error('Error toggling favorite:', error);
+        showToast('Erreur lors de la mise à jour du favori', 'error');
     });
+}
+
+function showToast(message, type = 'info') {
+    // Créer l'élément toast
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transform transition-all duration-300 translate-x-0 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+
+    // Icône selon le type
+    const icon = type === 'success' ?
+        '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>' :
+        type === 'error' ?
+        '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>' :
+        '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>';
+
+    toast.innerHTML = icon + `<span>${message}</span>`;
+
+    document.body.appendChild(toast);
+
+    // Animation d'entrée
+    setTimeout(() => {
+        toast.style.opacity = '1';
+    }, 10);
+
+    // Retirer après 3 secondes
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
 }
 
 function getCookie(name) {
