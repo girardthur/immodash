@@ -5,15 +5,15 @@
 {% block content %}
 <div class="space-y-6" x-data="{ selectedListing: null }">
     <!-- En-tête -->
-    <h1 class="text-3xl font-bold text-gray-900">Annonces immobilières</h1>
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Annonces immobilières</h1>
 
     <!-- Filtres -->
-    <div class="bg-white shadow rounded-lg p-6">
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <form method="get" class="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <!-- Statut -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-                <select name="status" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Statut</label>
+                <select name="status" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         onchange="this.form.submit()">
                     <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Toutes</option>
                     <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Actives</option>
@@ -23,8 +23,8 @@
 
             <!-- Source -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Source</label>
-                <select name="source" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Source</label>
+                <select name="source" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         onchange="this.form.submit()">
                     <option value="all" {% if source_filter == 'all' %}selected{% endif %}>Toutes</option>
                     <option value="leboncoin" {% if source_filter == 'leboncoin' %}selected{% endif %}>Leboncoin</option>
@@ -33,8 +33,8 @@
 
             <!-- Type de bien -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Type de bien</label>
-                <select name="property_type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type de bien</label>
+                <select name="property_type" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         onchange="this.form.submit()">
                     <option value="all" {% if property_type_filter == 'all' %}selected{% endif %}>Tous</option>
                     <option value="apartment" {% if property_type_filter == 'apartment' %}selected{% endif %}>Appartement</option>
@@ -44,8 +44,8 @@
 
             <!-- Tri -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Trier par</label>
-                <select name="sort" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Trier par</label>
+                <select name="sort" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         onchange="this.form.submit()">
                     <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Plus récent</option>
                     <option value="price_change" {% if sort_by == 'price_change' %}selected{% endif %}>Changement de prix récent</option>
@@ -59,16 +59,16 @@
     </div>
 
     <!-- Liste des annonces -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
-        <div class="divide-y divide-gray-200">
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <div class="divide-y divide-gray-200 dark:divide-gray-700">
             {% for listing in page_obj %}
-            <div class="p-6 hover:bg-gray-50 transition">
+            <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <div class="flex justify-between items-start">
                     <div class="flex-1">
                         <div class="flex items-center gap-2 mb-2">
-                            <h3 class="text-lg font-semibold text-gray-900">{{ listing.title }}</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ listing.title }}</h3>
                             {% if not listing.is_active %}
-                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
                                 Vendu
                             </span>
                             {% endif %}
@@ -80,7 +80,7 @@
                             {% endif %}
                         </div>
 
-                        <div class="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                        <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
                             <span class="flex items-center gap-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -99,13 +99,13 @@
 
                         <div class="flex items-center gap-6">
                             <div>
-                                <p class="text-sm text-gray-500">Prix</p>
-                                <p class="text-2xl font-bold text-blue-600">{{ listing.current_price|floatformat:0 }} €</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Prix</p>
+                                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ listing.current_price|floatformat:0 }} €</p>
                             </div>
                             {% if listing.price_per_sqm %}
                             <div>
-                                <p class="text-sm text-gray-500">Prix au m²</p>
-                                <p class="text-xl font-semibold text-gray-900">{{ listing.price_per_sqm|floatformat:0 }} €/m²</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Prix au m²</p>
+                                <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ listing.price_per_sqm|floatformat:0 }} €/m²</p>
                             </div>
                             {% endif %}
                         </div>
@@ -141,7 +141,7 @@
 
                     <div class="ml-4">
                         <a href="{{ listing.url }}" target="_blank" rel="noopener noreferrer"
-                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                             Voir l'annonce
                             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -151,7 +151,7 @@
                 </div>
             </div>
             {% empty %}
-            <div class="p-12 text-center text-gray-500">
+            <div class="p-12 text-center text-gray-500 dark:text-gray-400">
                 Aucune annonce trouvée pour ces critères.
             </div>
             {% endfor %}
@@ -160,24 +160,24 @@
 
     <!-- Pagination -->
     {% if page_obj.has_other_pages %}
-    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow">
+    <div class="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6 rounded-lg shadow">
         <div class="flex-1 flex justify-between sm:hidden">
             {% if page_obj.has_previous %}
             <a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}&source={{ source_filter }}&property_type={{ property_type_filter }}&sort={{ sort_by }}"
-               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+               class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                 Précédent
             </a>
             {% endif %}
             {% if page_obj.has_next %}
             <a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}&source={{ source_filter }}&property_type={{ property_type_filter }}&sort={{ sort_by }}"
-               class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+               class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                 Suivant
             </a>
             {% endif %}
         </div>
         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-                <p class="text-sm text-gray-700">
+                <p class="text-sm text-gray-700 dark:text-gray-300">
                     Page <span class="font-medium">{{ page_obj.number }}</span> sur <span class="font-medium">{{ page_obj.paginator.num_pages }}</span>
                 </p>
             </div>
@@ -185,13 +185,13 @@
                 <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                     {% if page_obj.has_previous %}
                     <a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}&source={{ source_filter }}&property_type={{ property_type_filter }}&sort={{ sort_by }}"
-                       class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                       class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600">
                         Précédent
                     </a>
                     {% endif %}
                     {% if page_obj.has_next %}
                     <a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}&source={{ source_filter }}&property_type={{ property_type_filter }}&sort={{ sort_by }}"
-                       class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                       class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600">
                         Suivant
                     </a>
                     {% endif %}
@@ -208,11 +208,11 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="selectedListing = null"></div>
 
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Historique des prix</h3>
-                        <button @click="selectedListing = null" class="text-gray-400 hover:text-gray-500">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Historique des prix</h3>
+                        <button @click="selectedListing = null" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
