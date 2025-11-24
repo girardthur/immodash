@@ -107,7 +107,7 @@ class SearchZone(models.Model):
 
 class Listing(models.Model):
     """Annonce immobilière"""
-    search_zone = models.ForeignKey(SearchZone, on_delete=models.CASCADE, related_name='listings')
+    search_zones = models.ManyToManyField(SearchZone, related_name='listings', verbose_name='Zones de recherche')
 
     # Identifiants externes
     external_id = models.CharField(max_length=200, verbose_name='ID externe', unique=True)
@@ -175,7 +175,6 @@ class Listing(models.Model):
         indexes = [
             models.Index(fields=['external_id', 'source']),
             models.Index(fields=['is_active']),
-            models.Index(fields=['search_zone', 'is_active']),
         ]
 
     def __str__(self):

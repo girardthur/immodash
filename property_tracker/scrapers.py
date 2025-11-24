@@ -129,7 +129,6 @@ class BaseScraper:
             listing, created = Listing.objects.get_or_create(
                 external_id=external_id,
                 defaults={
-                    'search_zone': self.search_zone,
                     'source': source,
                     'url': listing_data['url'],
                     'title': listing_data['title'],
@@ -145,6 +144,12 @@ class BaseScraper:
                     'longitude': listing_data.get('longitude'),
                 }
             )
+
+            # Ajouter la zone de recherche (many-to-many)
+            # Vérifier si la zone n'est pas déjà associée pour éviter les doublons
+            if self.search_zone not in listing.search_zones.all():
+                listing.search_zones.add(self.search_zone)
+                logger.info(f"Zone {self.search_zone} ajoutée au listing {listing.title}")
 
             if created:
                 # Nouvelle annonce : créer l'entrée initiale dans l'historique

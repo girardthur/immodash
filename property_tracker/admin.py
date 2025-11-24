@@ -29,7 +29,7 @@ class ListingAdmin(admin.ModelAdmin):
     readonly_fields = ['first_seen_at', 'last_seen_at', 'created_at', 'updated_at', 'price_per_sqm']
     fieldsets = (
         ('Informations de base', {
-            'fields': ('search_zone', 'external_id', 'source', 'url')
+            'fields': ('search_zones', 'external_id', 'source', 'url')
         }),
         ('Détails du bien', {
             'fields': ('title', 'description', 'property_type')

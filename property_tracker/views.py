@@ -22,7 +22,7 @@ def dashboard(request):
     search_zones = request.user.search_zones.filter(is_active=True)
 
     # Récupérer toutes les annonces des zones de l'utilisateur
-    all_listings = Listing.objects.filter(search_zone__in=search_zones)
+    all_listings = Listing.objects.filter(search_zones__in=search_zones)
 
     # Statistiques globales
     active_listings_count = all_listings.filter(is_active=True).count()
@@ -56,7 +56,7 @@ def dashboard(request):
     # Récupérer l'historique des prix des 30 derniers jours
     price_evolution = (
         PriceHistory.objects.filter(
-            listing__search_zone__in=search_zones,
+            listing__search_zones__in=search_zones,
             detected_at__gte=thirty_days_ago,
             price_per_sqm__isnull=False
         )
@@ -100,7 +100,7 @@ def listings(request):
     search_zones = request.user.search_zones.filter(is_active=True)
 
     # Query de base avec prefetch de l'historique des prix pour éviter N+1 queries
-    listings_query = Listing.objects.filter(search_zone__in=search_zones).select_related('search_zone').prefetch_related('price_history')
+    listings_query = Listing.objects.filter(search_zones__in=search_zones).prefetch_related('search_zones', 'price_history')
 
     # Filtres
     status_filter = request.GET.get('status', 'all')
@@ -164,7 +164,7 @@ def listing_price_history(request, listing_id):
     listing = get_object_or_404(
         Listing,
         id=listing_id,
-        search_zone__user=request.user
+        search_zones__user=request.user
     )
 
     # Récupérer l'historique des prix
@@ -285,12 +285,10 @@ def settings(request):
             else:
                 has_changed = True
 
-            # Si les préférences ont changé, supprimer les anciennes annonces et lancer un scraping
+            # Si les préférences ont changé, lancer un scraping
             if has_changed:
-                # Supprimer toutes les annonces existantes de l'utilisateur
-                deleted_count, _ = Listing.objects.filter(
-                    search_zone__user=request.user
-                ).delete()
+                # Note: On ne supprime plus les annonces car elles peuvent être partagées entre plusieurs zones
+                # L'ancienne zone est désactivée par le signal sync_search_zone_from_preferences
 
                 # Lancer le scraping de la nouvelle zone
                 from .tasks import scrape_single_zone
@@ -302,8 +300,8 @@ def settings(request):
 
                     messages.success(
                         request,
-                        f'Vos préférences ont été mises à jour! {deleted_count} anciennes annonces ont été supprimées. '
-                        f'Le scraping des nouvelles annonces est en cours... Vous allez être redirigé vers la page des annonces dans quelques instants.'
+                        'Vos préférences ont été mises à jour! '
+                        'Le scraping des annonces est en cours... Vous allez être redirigé vers la page des annonces dans quelques instants.'
                     )
                     # Rediriger vers la page des annonces pour voir les nouvelles annonces
                     # On ajoute un paramètre pour déclencher un auto-refresh après quelques secondes
