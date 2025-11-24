@@ -131,6 +131,7 @@ class BaseScraper:
                 defaults={
                     'source': source,
                     'url': listing_data['url'],
+                    'image_url': listing_data.get('image_url'),
                     'title': listing_data['title'],
                     'description': listing_data.get('description', ''),
                     'property_type': listing_data['property_type'],
@@ -324,10 +325,17 @@ class LeboncoinScraper(BaseScraper):
                 latitude = ad.location.lat
                 longitude = ad.location.lng
 
+            # Extraire l'URL de l'image principale
+            image_url = None
+            if hasattr(ad, 'images') and ad.images and len(ad.images) > 0:
+                # Prendre la première image (image principale)
+                image_url = ad.images[0].url if hasattr(ad.images[0], 'url') else str(ad.images[0])
+
             return {
                 'external_id': f"lbc_{ad.id}",
                 'source': Source.LEBONCOIN,
                 'url': ad.url,
+                'image_url': image_url,
                 'title': ad.subject,
                 'description': ad.body or '',
                 'property_type': property_type,

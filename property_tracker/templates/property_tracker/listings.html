@@ -63,8 +63,25 @@
         <div class="divide-y divide-gray-200 dark:divide-gray-700">
             {% for listing in page_obj %}
             <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                <div class="flex justify-between items-start">
-                    <div class="flex-1">
+                <div class="flex gap-4 items-start">
+                    <!-- Image de l'annonce -->
+                    {% if listing.image_url %}
+                    <div class="flex-shrink-0">
+                        <img src="{{ listing.image_url }}"
+                             alt="{{ listing.title }}"
+                             class="w-48 h-36 object-cover rounded-lg shadow-sm"
+                             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22192%22 height=%22144%22 viewBox=%220 0 192 144%22%3E%3Crect fill=%22%23e5e7eb%22 width=%22192%22 height=%22144%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2214%22 fill=%22%239ca3af%22%3EImage non disponible%3C/text%3E%3C/svg%3E';">
+                    </div>
+                    {% else %}
+                    <div class="flex-shrink-0 w-48 h-36 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                        <svg class="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    {% endif %}
+
+                    <!-- Contenu de l'annonce -->
+                    <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-2">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ listing.title }}</h3>
                             {% if not listing.is_active %}

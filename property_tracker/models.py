@@ -117,6 +117,7 @@ class Listing(models.Model):
         verbose_name='Source'
     )
     url = models.URLField(verbose_name='URL de l\'annonce')
+    image_url = models.URLField(verbose_name='URL de l\'image principale', blank=True, null=True)
 
     # Informations du bien
     title = models.CharField(max_length=500, verbose_name='Titre')
