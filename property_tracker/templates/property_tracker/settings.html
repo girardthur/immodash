@@ -3,130 +3,234 @@
 {% block title %}Paramètres - Immodash{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto space-y-6">
-    <!-- En-tête -->
-    <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Paramètres</h1>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Gérez vos préférences de recherche immobilière</p>
+<div class="max-w-4xl mx-auto space-y-8">
+    <!-- En-tête amélioré -->
+    <div class="text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-4">
+            <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+        </div>
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">Paramètres</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400">Personnalisez votre zone de recherche immobilière</p>
     </div>
 
-    <!-- Formulaire de préférences de recherche -->
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg transition-colors">
-        <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Préférences de recherche</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Définissez votre zone de recherche unique pour le tracking des annonces immobilières
+    <!-- Préférences actuelles (en haut pour meilleure visibilité) -->
+    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800 shadow-lg">
+        <div class="flex items-center gap-3 mb-6">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Vos préférences actuelles</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Ville</dt>
+                </div>
+                <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ preferences.city }}</dd>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                        </svg>
+                    </div>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Rayon</dt>
+                </div>
+                <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ preferences.radius_km }} km</dd>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="flex-shrink-0 w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </div>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type de bien</dt>
+                </div>
+                <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ preferences.get_property_type_display }}</dd>
+            </div>
+        </div>
+
+        {% if preferences.updated_at %}
+        <div class="mt-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Dernière mise à jour : {{ preferences.updated_at|date:"d/m/Y à H:i" }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Formulaire de modification -->
+    <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-6">
+            <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Modifier mes préférences
+            </h2>
+            <p class="mt-2 text-blue-100">
+                Ajustez votre zone de recherche pour suivre les annonces qui vous intéressent
             </p>
         </div>
 
-        <form method="post" class="px-6 py-6 space-y-6">
+        <form method="post" class="px-6 py-8 space-y-8">
             {% csrf_token %}
 
             <!-- Ville -->
-            <div>
-                <label for="{{ form.city.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div class="group">
+                <label for="{{ form.city.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
                     {{ form.city.label }}
                 </label>
                 {{ form.city }}
                 {% if form.city.help_text %}
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ form.city.help_text }}</p>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-start gap-2">
+                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.city.help_text }}
+                </p>
                 {% endif %}
                 {% if form.city.errors %}
-                <div class="mt-2 text-sm text-red-600">
+                <div class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
                     {{ form.city.errors }}
                 </div>
                 {% endif %}
             </div>
 
             <!-- Rayon -->
-            <div>
-                <label for="{{ form.radius_km.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div class="group">
+                <label for="{{ form.radius_km.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                        </svg>
+                    </div>
                     {{ form.radius_km.label }}
                 </label>
                 {{ form.radius_km }}
                 {% if form.radius_km.help_text %}
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ form.radius_km.help_text }}</p>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-start gap-2">
+                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.radius_km.help_text }}
+                </p>
                 {% endif %}
                 {% if form.radius_km.errors %}
-                <div class="mt-2 text-sm text-red-600">
+                <div class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
                     {{ form.radius_km.errors }}
                 </div>
                 {% endif %}
             </div>
 
             <!-- Type de bien -->
-            <div>
-                <label for="{{ form.property_type.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div class="group">
+                <label for="{{ form.property_type.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </div>
                     {{ form.property_type.label }}
                 </label>
                 {{ form.property_type }}
                 {% if form.property_type.help_text %}
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ form.property_type.help_text }}</p>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-start gap-2">
+                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.property_type.help_text }}
+                </p>
                 {% endif %}
                 {% if form.property_type.errors %}
-                <div class="mt-2 text-sm text-red-600">
+                <div class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
                     {{ form.property_type.errors }}
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Informations sur les préférences actuelles -->
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
-                <div class="flex">
+            <!-- Informations importantes -->
+            <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg p-4">
+                <div class="flex items-start">
                     <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="h-6 w-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                         </svg>
                     </div>
                     <div class="ml-3">
-                        <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">À propos de vos préférences</h3>
-                        <div class="mt-2 text-sm text-blue-700 dark:text-blue-400">
-                            <p>Vous ne pouvez définir qu'une seule zone de recherche par compte.</p>
-                            <p class="mt-1">Cette zone sera utilisée pour tracker automatiquement les nouvelles annonces immobilières correspondant à vos critères.</p>
+                        <h3 class="text-sm font-bold text-blue-900 dark:text-blue-300">À savoir</h3>
+                        <div class="mt-2 text-sm text-blue-800 dark:text-blue-400 space-y-1">
+                            <p class="flex items-start gap-2">
+                                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                Une seule zone de recherche par compte
+                            </p>
+                            <p class="flex items-start gap-2">
+                                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                Tracking automatique toutes les 30 minutes
+                            </p>
+                            <p class="flex items-start gap-2">
+                                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                Détection automatique des baisses de prix
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Boutons -->
-            <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
                 <a href="{% url 'property_tracker:dashboard' %}"
-                   class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                   class="group inline-flex items-center gap-2 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all shadow-sm hover:shadow">
+                    <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
                     Annuler
                 </a>
                 <button type="submit"
-                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="group inline-flex items-center gap-2 px-8 py-3 border border-transparent rounded-xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <svg class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Enregistrer les préférences
+                    Enregistrer les modifications
                 </button>
             </div>
         </form>
-    </div>
-
-    <!-- Préférences actuelles (résumé) -->
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Vos préférences actuelles</h3>
-        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 rounded-lg transition-colors">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Ville</dt>
-                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ preferences.city }}</dd>
-            </div>
-            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 rounded-lg transition-colors">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Rayon</dt>
-                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ preferences.radius_km }} km</dd>
-            </div>
-            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 rounded-lg transition-colors">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type de bien</dt>
-                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ preferences.get_property_type_display }}</dd>
-            </div>
-        </dl>
-        {% if preferences.updated_at %}
-        <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
-            Dernière mise à jour : {{ preferences.updated_at|date:"d/m/Y à H:i" }}
-        </p>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
