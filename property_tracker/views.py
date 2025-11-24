@@ -303,7 +303,8 @@ def settings(request):
                     messages.success(
                         request,
                         f'Vos préférences ont été mises à jour! {deleted_count} anciennes annonces ont été supprimées. '
-                        f'Le scraping des nouvelles annonces est en cours...'
+                        f'Le scraping des nouvelles annonces est en cours (environ 10 secondes)... '
+                        f'Rechargez la page dans quelques instants pour voir les nouvelles annonces.'
                     )
                 else:
                     messages.success(request, 'Vos préférences de recherche ont été mises à jour avec succès!')
