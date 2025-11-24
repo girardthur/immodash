@@ -303,9 +303,11 @@ def settings(request):
                     messages.success(
                         request,
                         f'Vos préférences ont été mises à jour! {deleted_count} anciennes annonces ont été supprimées. '
-                        f'Le scraping des nouvelles annonces est en cours (environ 10 secondes)... '
-                        f'Rechargez la page dans quelques instants pour voir les nouvelles annonces.'
+                        f'Le scraping des nouvelles annonces est en cours... Vous allez être redirigé vers la page des annonces dans quelques instants.'
                     )
+                    # Rediriger vers la page des annonces pour voir les nouvelles annonces
+                    # On ajoute un paramètre pour déclencher un auto-refresh après quelques secondes
+                    return redirect('property_tracker:listings')
                 else:
                     messages.success(request, 'Vos préférences de recherche ont été mises à jour avec succès!')
             else:

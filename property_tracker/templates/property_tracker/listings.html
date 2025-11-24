@@ -263,5 +263,30 @@ function loadPriceHistory(listingId) {
             Plotly.newPlot('price-history-chart', [trace], layout, {responsive: true});
         });
 }
+
+// Auto-refresh si l'utilisateur vient de changer ses préférences
+document.addEventListener('DOMContentLoaded', () => {
+    // Vérifier si on vient de la page settings (referrer)
+    const referrer = document.referrer;
+    const isFromSettings = referrer.includes('/settings');
+
+    // Vérifier aussi s'il y a un message de succès concernant le scraping
+    const messages = document.querySelectorAll('.alert, [role="alert"]');
+    let hasScrapingMessage = false;
+    messages.forEach(msg => {
+        if (msg.textContent.includes('scraping') || msg.textContent.includes('annonces ont été supprimées')) {
+            hasScrapingMessage = true;
+        }
+    });
+
+    if (isFromSettings || hasScrapingMessage) {
+        // Auto-refresh après 10 secondes pour voir les nouvelles annonces
+        console.log('Auto-refresh programmé dans 10 secondes...');
+        setTimeout(() => {
+            console.log('Rechargement de la page...');
+            window.location.reload();
+        }, 10000);
+    }
+});
 </script>
 {% endblock %}
