@@ -31,14 +31,9 @@ cp .env.production.example .env.production
 
 echo -e "\n${YELLOW}🔐 Génération des secrets...${NC}"
 
-# Générer SECRET_KEY
-if command -v python3 &> /dev/null; then
-    SECRET_KEY=$(python3 -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")
-    echo -e "${GREEN}✓ SECRET_KEY généré${NC}"
-else
-    SECRET_KEY=$(openssl rand -base64 50)
-    echo -e "${GREEN}✓ SECRET_KEY généré (avec openssl)${NC}"
-fi
+# Générer SECRET_KEY (compatible Django)
+SECRET_KEY=$(openssl rand -base64 50 | tr -d '/+=' | head -c 50)
+echo -e "${GREEN}✓ SECRET_KEY généré${NC}"
 
 # Générer POSTGRES_PASSWORD
 POSTGRES_PASSWORD=$(openssl rand -base64 32)
