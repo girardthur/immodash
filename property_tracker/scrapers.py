@@ -161,7 +161,13 @@ class BaseScraper:
                 )
                 logger.info(f"Nouvelle annonce créée : {listing.title} - {listing.current_price}€")
             else:
-                # Annonce existante : vérifier si le prix a changé
+                # Annonce existante : mettre à jour l'image si elle n'existe pas
+                if not listing.image_url and listing_data.get('image_url'):
+                    listing.image_url = listing_data.get('image_url')
+                    listing.save()
+                    logger.info(f"Image ajoutée pour : {listing.title}")
+
+                # Vérifier si le prix a changé
                 if listing.current_price != Decimal(str(listing_data['price'])):
                     old_price = listing.current_price
                     new_price = Decimal(str(listing_data['price']))
