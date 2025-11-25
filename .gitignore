@@ -136,6 +136,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.production
 .envrc
 .venv
 env/
@@ -143,6 +144,13 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Production files
+certbot/
+staticfiles/
+media/
+*.sql
+*.backup
 
 # Spyder project settings
 .spyderproject
