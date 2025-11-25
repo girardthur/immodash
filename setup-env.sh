@@ -35,12 +35,12 @@ echo -e "\n${YELLOW}🔐 Génération des secrets...${NC}"
 SECRET_KEY=$(openssl rand -base64 50 | tr -d '/+=' | head -c 50)
 echo -e "${GREEN}✓ SECRET_KEY généré${NC}"
 
-# Générer POSTGRES_PASSWORD
-POSTGRES_PASSWORD=$(openssl rand -base64 32)
+# Générer POSTGRES_PASSWORD (sans caractères spéciaux problématiques)
+POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -d '/+=' | head -c 32)
 echo -e "${GREEN}✓ POSTGRES_PASSWORD généré${NC}"
 
-# Générer REDIS_PASSWORD
-REDIS_PASSWORD=$(openssl rand -base64 32)
+# Générer REDIS_PASSWORD (sans caractères spéciaux problématiques)
+REDIS_PASSWORD=$(openssl rand -base64 32 | tr -d '/+=' | head -c 32)
 echo -e "${GREEN}✓ REDIS_PASSWORD généré${NC}"
 
 # Demander le domaine
