@@ -21,9 +21,9 @@ app.autodiscover_tasks()
 
 # Configure Celery Beat periodic tasks
 app.conf.beat_schedule = {
-    'scrape-every-30-minutes': {
+    'scrape-every-4-hours': {
         'task': 'property_tracker.tasks.periodic_scraping_task',
-        'schedule': crontab(minute='*/30'),  # Toutes les 30 minutes
+        'schedule': crontab(minute=0, hour='*/4'),  # Toutes les 4 heures (0h, 4h, 8h, 12h, 16h, 20h)
     },
 }
 
