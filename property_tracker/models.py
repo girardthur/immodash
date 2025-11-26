@@ -65,6 +65,18 @@ def sync_search_zone_from_preferences(sender, instance, **kwargs):
     if search_zones.exists():
         # Mettre à jour la première zone existante
         search_zone = search_zones.first()
+
+        # Vérifier si les préférences ont changé
+        has_changed = (
+            search_zone.city != instance.city or
+            search_zone.radius_km != instance.radius_km or
+            search_zone.property_type != instance.property_type
+        )
+
+        # Si les préférences ont changé, dissocier les anciennes annonces
+        if has_changed:
+            search_zone.listings.clear()
+
         search_zone.city = instance.city
         search_zone.radius_km = instance.radius_km
         search_zone.property_type = instance.property_type
