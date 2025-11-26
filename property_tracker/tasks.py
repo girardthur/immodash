@@ -15,24 +15,52 @@ logger = logging.getLogger(__name__)
 def scrape_all_search_zones():
     """
     Scrape toutes les zones de recherche actives
+    Optimisé pour éviter les doublons : si plusieurs zones ont les mêmes critères
+    (city, radius_km, property_type), ne scrape qu'une seule fois
     """
     try:
         active_zones = SearchZone.objects.filter(is_active=True).select_related('user')
         total_listings = 0
 
+        # Grouper les zones par critères identiques (city, radius, property_type)
+        from collections import defaultdict
+        zones_by_criteria = defaultdict(list)
+
         for zone in active_zones:
-            logger.info(f"Scraping de la zone : {zone}")
-            results = scrape_search_zone(zone)
+            # Créer une clé unique pour les critères
+            criteria_key = (zone.city.lower(), zone.radius_km, zone.property_type)
+            zones_by_criteria[criteria_key].append(zone)
+
+        logger.info(f"Scraping de {len(zones_by_criteria)} groupes de zones uniques (total: {active_zones.count()} zones)")
+
+        # Scraper une seule fois par groupe de critères identiques
+        for criteria_key, zones in zones_by_criteria.items():
+            city, radius, prop_type = criteria_key
+            # Utiliser la première zone du groupe pour le scraping
+            primary_zone = zones[0]
+
+            logger.info(f"Scraping du groupe : {primary_zone} ({len(zones)} zone(s) avec ces critères)")
+            results = scrape_search_zone(primary_zone)
+
+            # Associer les résultats à toutes les zones du groupe
+            if len(zones) > 1:
+                logger.info(f"Association des résultats aux {len(zones)} zones du groupe")
+                # Les listings sont déjà associés à primary_zone dans scrape_search_zone
+                # Il faut maintenant les associer aux autres zones du groupe
+                for listing in primary_zone.listings.all():
+                    for zone in zones[1:]:
+                        listing.search_zones.add(zone)
 
             zone_listings_count = len(results['leboncoin'])
             total_listings += zone_listings_count
 
-            logger.info(f"Zone {zone}: {zone_listings_count} annonces traitées")
+            logger.info(f"Groupe {primary_zone}: {zone_listings_count} annonces traitées")
 
-        logger.info(f"Scraping terminé : {total_listings} annonces au total")
+        logger.info(f"Scraping terminé : {total_listings} annonces au total pour {len(zones_by_criteria)} groupes")
         return {
             'status': 'success',
             'zones_scraped': active_zones.count(),
+            'unique_criteria_groups': len(zones_by_criteria),
             'total_listings': total_listings,
             'timestamp': timezone.now().isoformat()
         }
