@@ -12,10 +12,58 @@ class UserSearchPreferencesAdmin(admin.ModelAdmin):
 
 @admin.register(SearchZone)
 class SearchZoneAdmin(admin.ModelAdmin):
-    list_display = ['city', 'radius_km', 'property_type', 'user', 'is_active', 'created_at']
+    list_display = [
+        'city', 'radius_km', 'property_type', 'user', 'is_active',
+        'scraping_status', 'last_successful_scrape_display', 'created_at'
+    ]
     list_filter = ['is_active', 'property_type', 'created_at']
-    search_fields = ['city', 'user__username']
-    readonly_fields = ['created_at', 'updated_at']
+    search_fields = ['city', 'user__username', 'user__email']
+    readonly_fields = ['created_at', 'updated_at', 'last_scraped_at', 'last_successful_scrape_at']
+
+    def scraping_status(self, obj):
+        """Affiche le statut du scraping avec des couleurs"""
+        from django.utils.html import format_html
+        from django.utils import timezone
+        from datetime import timedelta
+
+        if not obj.last_scraped_at:
+            return format_html('<span style="color: gray;">Jamais scrapé</span>')
+
+        if not obj.last_successful_scrape_at:
+            return format_html('<span style="color: red;">❌ Bloqué (Datadome)</span>')
+
+        # Si le dernier scraping réussi est plus ancien que le dernier scraping, c'est bloqué
+        if obj.last_scraped_at > obj.last_successful_scrape_at:
+            return format_html('<span style="color: orange;">⚠️ Dernièrement bloqué</span>')
+
+        # Si le dernier scraping réussi est récent (< 2h), c'est OK
+        if timezone.now() - obj.last_successful_scrape_at < timedelta(hours=2):
+            return format_html('<span style="color: green;">✓ OK</span>')
+
+        return format_html('<span style="color: blue;">✓ OK (ancien)</span>')
+
+    scraping_status.short_description = 'Statut scraping'
+
+    def last_successful_scrape_display(self, obj):
+        """Affiche la dernière date de scraping réussi de manière lisible"""
+        if not obj.last_successful_scrape_at:
+            return '-'
+        from django.utils import timezone
+        from datetime import timedelta
+
+        delta = timezone.now() - obj.last_successful_scrape_at
+
+        if delta < timedelta(hours=1):
+            minutes = int(delta.total_seconds() / 60)
+            return f'Il y a {minutes} min'
+        elif delta < timedelta(days=1):
+            hours = int(delta.total_seconds() / 3600)
+            return f'Il y a {hours}h'
+        else:
+            days = delta.days
+            return f'Il y a {days}j'
+
+    last_successful_scrape_display.short_description = 'Dernier succès'
 
 
 @admin.register(Listing)

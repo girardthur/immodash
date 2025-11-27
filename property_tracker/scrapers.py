@@ -364,18 +364,35 @@ class LeboncoinScraper(BaseScraper):
 def scrape_search_zone(search_zone: SearchZone) -> Dict[str, List[Listing]]:
     """
     Scrape toutes les sources pour une zone de recherche donnée
+    Met à jour les timestamps de scraping sur la zone
     """
+    from lbc.exceptions import DatadomeError
+
+    # Enregistrer la tentative de scraping
+    search_zone.last_scraped_at = timezone.now()
+    search_zone.save(update_fields=['last_scraped_at'])
+
     results = {
         'leboncoin': [],
     }
+
+    datadome_blocked = False
 
     # Scraper Leboncoin
     try:
         leboncoin_scraper = LeboncoinScraper(search_zone)
         results['leboncoin'] = leboncoin_scraper.scrape()
         logger.info(f"Leboncoin: {len(results['leboncoin'])} annonces trouvées pour {search_zone}")
+    except DatadomeError as e:
+        logger.error(f"Erreur Datadome pour {search_zone}: {e}")
+        datadome_blocked = True
     except Exception as e:
         logger.error(f"Erreur Leboncoin pour {search_zone}: {e}")
+
+    # Mettre à jour le timestamp de succès seulement si pas bloqué par Datadome
+    if not datadome_blocked:
+        search_zone.last_successful_scrape_at = timezone.now()
+        search_zone.save(update_fields=['last_successful_scrape_at'])
 
     return results
 

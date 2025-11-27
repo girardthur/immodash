@@ -105,6 +105,8 @@ class SearchZone(models.Model):
         verbose_name='Type de bien'
     )
     is_active = models.BooleanField(default=True, verbose_name='Actif')
+    last_scraped_at = models.DateTimeField(null=True, blank=True, verbose_name='Dernier scraping')
+    last_successful_scrape_at = models.DateTimeField(null=True, blank=True, verbose_name='Dernier scraping réussi')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
