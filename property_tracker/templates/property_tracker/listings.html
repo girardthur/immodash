@@ -3,7 +3,7 @@
 {% block title %}Annonces - Immodash{% endblock %}
 
 {% block content %}
-<div class="space-y-6" x-data="{ selectedListing: null }">
+<div class="space-y-6" x-data="{ selectedListing: null }" x-init="$watch('selectedListing', value => { if(value) loadPriceHistory(value) })">
     <!-- En-tête -->
     <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Annonces immobilières</h1>
 
@@ -296,19 +296,6 @@
 </div>
 
 <script>
-// Charger l'historique des prix quand une annonce est sélectionnée
-document.addEventListener('alpine:init', () => {
-    let lastSelectedListing = null;
-
-    setInterval(() => {
-        const currentListing = Alpine.raw(Alpine.store('selectedListing'));
-        if (currentListing && currentListing !== lastSelectedListing) {
-            lastSelectedListing = currentListing;
-            loadPriceHistory(currentListing);
-        }
-    }, 100);
-});
-
 function loadPriceHistory(listingId) {
     fetch(`/listings/${listingId}/price-history/`)
         .then(response => response.json())
