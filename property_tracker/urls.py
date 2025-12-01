@@ -23,8 +23,8 @@ urlpatterns = [
     # Paramètres (sélection de zone de recherche)
     path('settings/', views.settings, name='settings'),
 
-    # Admin - Gestion des zones de recherche (accessible aux admins uniquement)
-    path('admin/zones/', views.admin_zone_list, name='admin_zone_list'),
-    path('admin/zones/create/', views.admin_zone_create, name='admin_zone_create'),
-    path('admin/zones/<int:zone_id>/delete/', views.admin_zone_delete, name='admin_zone_delete'),
+    # Gestion des zones de recherche (accessible aux admins uniquement)
+    path('zones/', views.admin_zone_list, name='admin_zone_list'),
+    path('zones/create/', views.admin_zone_create, name='admin_zone_create'),
+    path('zones/<int:zone_id>/delete/', views.admin_zone_delete, name='admin_zone_delete'),
 ]
