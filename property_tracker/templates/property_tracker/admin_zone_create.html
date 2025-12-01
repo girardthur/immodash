@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Créer une zone - Immodash Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'property_tracker:admin_zone_list' %}" class="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Retour à la liste
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-6">
+            <h1 class="text-2xl font-bold text-white">Créer une nouvelle zone de recherche</h1>
+            <p class="mt-1 text-blue-100">Cette zone sera disponible pour tous les utilisateurs</p>
+        </div>
+
+        <form method="post" class="px-6 py-8 space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label for="{{ form.city.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ form.city.label }}
+                </label>
+                {{ form.city }}
+                {% if form.city.help_text %}
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ form.city.help_text }}</p>
+                {% endif %}
+                {% if form.city.errors %}
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.city.errors }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.radius_km.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ form.radius_km.label }}
+                </label>
+                {{ form.radius_km }}
+                {% if form.radius_km.help_text %}
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ form.radius_km.help_text }}</p>
+                {% endif %}
+                {% if form.radius_km.errors %}
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.radius_km.errors }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.property_type.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ form.property_type.label }}
+                </label>
+                {{ form.property_type }}
+                {% if form.property_type.help_text %}
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ form.property_type.help_text }}</p>
+                {% endif %}
+                {% if form.property_type.errors %}
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.property_type.errors }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex items-center">
+                {{ form.is_active }}
+                <label for="{{ form.is_active.id_for_label }}" class="ml-2 block text-sm text-gray-900 dark:text-white">
+                    {{ form.is_active.label }}
+                </label>
+            </div>
+            {% if form.is_active.help_text %}
+            <p class="ml-6 text-sm text-gray-500 dark:text-gray-400">{{ form.is_active.help_text }}</p>
+            {% endif %}
+
+            <div class="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <a href="{% url 'property_tracker:admin_zone_list' %}" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    Annuler
+                </a>
+                <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition">
+                    Créer la zone
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

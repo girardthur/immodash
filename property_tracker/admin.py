@@ -13,12 +13,12 @@ class UserSearchPreferencesAdmin(admin.ModelAdmin):
 @admin.register(SearchZone)
 class SearchZoneAdmin(admin.ModelAdmin):
     list_display = [
-        'city', 'radius_km', 'property_type', 'user', 'is_active',
+        'city', 'radius_km', 'property_type', 'created_by', 'is_active',
         'scraping_status', 'last_successful_scrape_display', 'created_at'
     ]
     list_filter = ['is_active', 'property_type', 'created_at']
-    search_fields = ['city', 'user__username', 'user__email']
-    readonly_fields = ['created_at', 'updated_at', 'last_scraped_at', 'last_successful_scrape_at']
+    search_fields = ['city', 'created_by__username', 'created_by__email']
+    readonly_fields = ['created_at', 'updated_at', 'last_scraped_at', 'last_successful_scrape_at', 'created_by']
 
     def scraping_status(self, obj):
         """Affiche le statut du scraping avec des couleurs"""

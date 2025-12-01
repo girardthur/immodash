@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-8">
-    <!-- En-tête amélioré -->
+    <!-- En-tête -->
     <div class="text-center">
         <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-4">
             <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13,205 +13,111 @@
             </svg>
         </div>
         <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">Paramètres</h1>
-        <p class="text-lg text-gray-600 dark:text-gray-400">Personnalisez votre zone de recherche immobilière</p>
+        <p class="text-lg text-gray-600 dark:text-gray-400">Sélectionnez votre zone de recherche immobilière</p>
     </div>
 
-    <!-- Préférences actuelles (en haut pour meilleure visibilité) -->
+    <!-- Préférences actuelles -->
+    {% if preferences.selected_zone %}
     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800 shadow-lg">
-        <div class="flex items-center gap-3 mb-6">
+        <div class="flex items-center gap-3 mb-4">
             <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Vos préférences actuelles</h3>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Votre zone actuelle</h3>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                    </div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Ville</dt>
-                </div>
-                <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ preferences.city }}</dd>
-            </div>
-
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
-                        </svg>
-                    </div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Rayon</dt>
-                </div>
-                <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ preferences.radius_km }} km</dd>
-            </div>
-
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="flex-shrink-0 w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                        </svg>
-                    </div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type de bien</dt>
-                </div>
-                <dd class="text-2xl font-bold text-gray-900 dark:text-white">{{ preferences.get_property_type_display }}</dd>
-            </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-md">
+            <p class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ preferences.selected_zone }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                Dernière mise à jour : {{ preferences.updated_at|date:"d/m/Y à H:i" }}
+            </p>
         </div>
-
-        {% if preferences.updated_at %}
-        <div class="mt-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span>Dernière mise à jour : {{ preferences.updated_at|date:"d/m/Y à H:i" }}</span>
-        </div>
-        {% endif %}
     </div>
+    {% else %}
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl p-6 border border-yellow-200 dark:border-yellow-800">
+        <div class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            <div>
+                <h3 class="text-lg font-bold text-yellow-900 dark:text-yellow-300">Aucune zone sélectionnée</h3>
+                <p class="mt-1 text-sm text-yellow-800 dark:text-yellow-400">
+                    Veuillez sélectionner une zone de recherche ci-dessous pour voir les annonces.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
-    <!-- Formulaire de modification -->
+    <!-- Formulaire de sélection -->
     <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-6">
             <h2 class="text-2xl font-bold text-white flex items-center gap-3">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                Modifier mes préférences
+                Choisir ma zone de recherche
             </h2>
             <p class="mt-2 text-blue-100">
-                Ajustez votre zone de recherche pour suivre les annonces qui vous intéressent
+                Sélectionnez la zone géographique pour laquelle vous souhaitez suivre les annonces
             </p>
         </div>
 
-        <form method="post" class="px-6 py-8 space-y-8">
+        <form method="post" class="px-6 py-8 space-y-6">
             {% csrf_token %}
 
-            <!-- Ville -->
+            <!-- Zone de recherche -->
             <div class="group">
-                <label for="{{ form.city.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                <label for="{{ form.selected_zone.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                         <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
                     </div>
-                    {{ form.city.label }}
+                    {{ form.selected_zone.label }}
                 </label>
-                {{ form.city }}
-                {% if form.city.help_text %}
+                {{ form.selected_zone }}
+                {% if form.selected_zone.help_text %}
                 <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-start gap-2">
                     <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                     </svg>
-                    {{ form.city.help_text }}
+                    {{ form.selected_zone.help_text }}
                 </p>
                 {% endif %}
-                {% if form.city.errors %}
+                {% if form.selected_zone.errors %}
                 <div class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                     </svg>
-                    {{ form.city.errors }}
+                    {{ form.selected_zone.errors }}
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Rayon -->
-            <div class="group">
-                <label for="{{ form.radius_km.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                    <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
-                        </svg>
-                    </div>
-                    {{ form.radius_km.label }}
-                </label>
-                {{ form.radius_km }}
-                {% if form.radius_km.help_text %}
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-start gap-2">
-                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                    </svg>
-                    {{ form.radius_km.help_text }}
-                </p>
-                {% endif %}
-                {% if form.radius_km.errors %}
-                <div class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                    </svg>
-                    {{ form.radius_km.errors }}
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Type de bien -->
-            <div class="group">
-                <label for="{{ form.property_type.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                    <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                        </svg>
-                    </div>
-                    {{ form.property_type.label }}
-                </label>
-                {{ form.property_type }}
-                {% if form.property_type.help_text %}
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-start gap-2">
-                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                    </svg>
-                    {{ form.property_type.help_text }}
-                </p>
-                {% endif %}
-                {% if form.property_type.errors %}
-                <div class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                    </svg>
-                    {{ form.property_type.errors }}
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Informations importantes -->
-            <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg p-4">
+            <!-- Info admin -->
+            {% if user.is_staff %}
+            <div class="bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500 rounded-r-lg p-4">
                 <div class="flex items-start">
-                    <div class="flex-shrink-0">
-                        <svg class="h-6 w-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
+                    <svg class="h-6 w-6 text-purple-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
                     <div class="ml-3">
-                        <h3 class="text-sm font-bold text-blue-900 dark:text-blue-300">À savoir</h3>
-                        <div class="mt-2 text-sm text-blue-800 dark:text-blue-400 space-y-1">
-                            <p class="flex items-start gap-2">
-                                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                Une seule zone de recherche par compte
-                            </p>
-                            <p class="flex items-start gap-2">
-                                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                Tracking automatique toutes les 30 minutes
-                            </p>
-                            <p class="flex items-start gap-2">
-                                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                                Détection automatique des baisses de prix
-                            </p>
-                        </div>
+                        <h3 class="text-sm font-bold text-purple-900 dark:text-purple-300">Mode administrateur</h3>
+                        <p class="mt-1 text-sm text-purple-800 dark:text-purple-400">
+                            Vous pouvez gérer les zones de recherche depuis l'interface admin.
+                        </p>
+                        <a href="{% url 'property_tracker:admin_zone_list' %}" class="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300">
+                            Gérer les zones
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
                     </div>
                 </div>
             </div>
+            {% endif %}
 
             <!-- Boutons -->
             <div class="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -227,7 +133,7 @@
                     <svg class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Enregistrer les modifications
+                    Enregistrer
                 </button>
             </div>
         </form>

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout as auth_logout
 from django.contrib import messages
 from django.db.models import Avg, Count, Min, Max, Q, F
@@ -10,7 +10,7 @@ from decimal import Decimal
 import json
 
 from .models import SearchZone, Listing, PriceHistory, PropertyType, UserSearchPreferences
-from .forms import UserSearchPreferencesForm
+from .forms import UserSearchPreferencesForm, SearchZoneForm
 
 
 @login_required
@@ -18,11 +18,15 @@ def dashboard(request):
     """
     Vue principale du dashboard avec les statistiques globales
     """
-    # Récupérer les zones de recherche de l'utilisateur
-    search_zones = request.user.search_zones.filter(is_active=True)
+    # Récupérer la zone sélectionnée par l'utilisateur
+    preferences = request.user.search_preferences
+    selected_zone = preferences.selected_zone if hasattr(request.user, 'search_preferences') and preferences.selected_zone else None
 
-    # Récupérer toutes les annonces des zones de l'utilisateur
-    all_listings = Listing.objects.filter(search_zones__in=search_zones)
+    # Récupérer les annonces de la zone sélectionnée
+    if selected_zone:
+        all_listings = Listing.objects.filter(search_zones=selected_zone)
+    else:
+        all_listings = Listing.objects.none()
 
     # Statistiques globales
     active_listings_count = all_listings.filter(is_active=True).count()
@@ -103,11 +107,15 @@ def listings(request):
     """
     Liste des annonces avec filtres et tri
     """
-    # Récupérer les zones de recherche de l'utilisateur
-    search_zones = request.user.search_zones.filter(is_active=True)
+    # Récupérer la zone sélectionnée par l'utilisateur
+    preferences = request.user.search_preferences
+    selected_zone = preferences.selected_zone if hasattr(request.user, 'search_preferences') and preferences.selected_zone else None
 
     # Query de base avec prefetch de l'historique des prix pour éviter N+1 queries
-    listings_query = Listing.objects.filter(search_zones__in=search_zones).prefetch_related('search_zones', 'price_history')
+    if selected_zone:
+        listings_query = Listing.objects.filter(search_zones=selected_zone).prefetch_related('search_zones', 'price_history')
+    else:
+        listings_query = Listing.objects.none()
 
     # Filtres
     status_filter = request.GET.get('status', 'all')
@@ -270,60 +278,17 @@ def logout_view(request):
 @login_required
 def settings(request):
     """
-    Page de paramètres utilisateur pour gérer les préférences de recherche
+    Page de paramètres utilisateur pour sélectionner une zone de recherche
     """
     # Récupérer ou créer les préférences de l'utilisateur
     preferences, created = UserSearchPreferences.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        # Récupérer les anciennes valeurs AVANT de créer le formulaire
-        # (form.is_valid() modifie l'instance)
-        old_city = preferences.city if not created else None
-        old_radius = preferences.radius_km if not created else None
-        old_property_type = preferences.property_type if not created else None
-
         form = UserSearchPreferencesForm(request.POST, instance=preferences)
         if form.is_valid():
-            # Sauvegarder les nouvelles préférences
             form.save()
-
-            # Vérifier si les préférences ont changé
-            has_changed = False
-            if not created:
-                if (old_city != preferences.city or
-                    old_radius != preferences.radius_km or
-                    old_property_type != preferences.property_type):
-                    has_changed = True
-            else:
-                has_changed = True
-
-            # Si les préférences ont changé, lancer un scraping
-            if has_changed:
-                # Note: On ne supprime plus les annonces car elles peuvent être partagées entre plusieurs zones
-                # L'ancienne zone est désactivée par le signal sync_search_zone_from_preferences
-
-                # Lancer le scraping de la nouvelle zone
-                from .tasks import scrape_single_zone
-                search_zone = request.user.search_zones.filter(is_active=True).first()
-
-                if search_zone:
-                    # Lancer la tâche Celery en arrière-plan
-                    scrape_single_zone.delay(search_zone.id)
-
-                    messages.success(
-                        request,
-                        'Vos préférences ont été mises à jour! '
-                        'Le scraping des annonces est en cours... Vous allez être redirigé vers la page des annonces dans quelques instants.'
-                    )
-                    # Rediriger vers la page des annonces pour voir les nouvelles annonces
-                    # On ajoute un paramètre pour déclencher un auto-refresh après quelques secondes
-                    return redirect('property_tracker:listings')
-                else:
-                    messages.success(request, 'Vos préférences de recherche ont été mises à jour avec succès!')
-            else:
-                messages.info(request, 'Aucune modification détectée.')
-
-            return redirect('property_tracker:settings')
+            messages.success(request, 'Zone de recherche mise à jour avec succès!')
+            return redirect('property_tracker:listings')
         else:
             messages.error(request, 'Erreur lors de la mise à jour de vos préférences.')
     else:
@@ -365,6 +330,69 @@ def toggle_favorite(request, listing_id):
         'is_favorite': is_favorite,
         'message': message
     })
+
+
+# ===========================
+# VUES ADMIN - GESTION DES ZONES
+# ===========================
+
+def is_admin(user):
+    """Vérifier si l'utilisateur est admin/staff"""
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+
+@user_passes_test(is_admin)
+def admin_zone_list(request):
+    """
+    Liste toutes les zones de recherche (accessible aux admins uniquement)
+    """
+    zones = SearchZone.objects.all().order_by('-created_at')
+
+    context = {
+        'zones': zones,
+    }
+
+    return render(request, 'property_tracker/admin_zones.html', context)
+
+
+@user_passes_test(is_admin)
+def admin_zone_create(request):
+    """
+    Créer une nouvelle zone de recherche (accessible aux admins uniquement)
+    """
+    if request.method == 'POST':
+        form = SearchZoneForm(request.POST)
+        if form.is_valid():
+            zone = form.save(commit=False)
+            zone.created_by = request.user
+            zone.save()
+
+            messages.success(request, f'Zone "{zone}" créée avec succès!')
+            return redirect('property_tracker:admin_zone_list')
+        else:
+            messages.error(request, 'Erreur lors de la création de la zone.')
+    else:
+        form = SearchZoneForm()
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'property_tracker/admin_zone_create.html', context)
+
+
+@user_passes_test(is_admin)
+@require_http_methods(["POST"])
+def admin_zone_delete(request, zone_id):
+    """
+    Supprimer une zone de recherche (accessible aux admins uniquement)
+    """
+    zone = get_object_or_404(SearchZone, id=zone_id)
+    zone_name = str(zone)
+    zone.delete()
+
+    messages.success(request, f'Zone "{zone_name}" supprimée avec succès!')
+    return redirect('property_tracker:admin_zone_list')
 
 
 @login_required

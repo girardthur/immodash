@@ -20,11 +20,11 @@ urlpatterns = [
     # Favoris
     path('favorites/<int:listing_id>/remove/', views.remove_favorite, name='remove_favorite'),
 
-    # Zones de recherche (DEPRECATED - maintenant géré via UserSearchPreferences dans Settings)
-    # path('search-zones/', views.search_zones, name='search_zones'),
-    # path('search-zones/create/', views.create_search_zone, name='create_search_zone'),
-    # path('search-zones/<int:zone_id>/delete/', views.delete_search_zone, name='delete_search_zone'),
-
-    # Paramètres (gestion de la zone de recherche unique via UserSearchPreferences)
+    # Paramètres (sélection de zone de recherche)
     path('settings/', views.settings, name='settings'),
+
+    # Admin - Gestion des zones de recherche (accessible aux admins uniquement)
+    path('admin/zones/', views.admin_zone_list, name='admin_zone_list'),
+    path('admin/zones/create/', views.admin_zone_create, name='admin_zone_create'),
+    path('admin/zones/<int:zone_id>/delete/', views.admin_zone_delete, name='admin_zone_delete'),
 ]

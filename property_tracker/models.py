@@ -16,15 +16,19 @@ class Source(models.TextChoices):
 
 
 class UserSearchPreferences(models.Model):
-    """Préférences de recherche d'un utilisateur (une seule zone par utilisateur)"""
+    """Préférences de recherche d'un utilisateur (sélection d'une zone existante)"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='search_preferences')
-    city = models.CharField(max_length=200, verbose_name='Ville', default='Paris')
-    radius_km = models.IntegerField(verbose_name='Rayon (km)', default=10)
+    selected_zone = models.ForeignKey('SearchZone', null=True, blank=True, on_delete=models.SET_NULL, related_name='users', verbose_name='Zone sélectionnée')
+
+    # Anciens champs gardés pour compatibilité (seront supprimés plus tard)
+    city = models.CharField(max_length=200, verbose_name='Ville', default='Paris', blank=True)
+    radius_km = models.IntegerField(verbose_name='Rayon (km)', default=10, blank=True, null=True)
     property_type = models.CharField(
         max_length=20,
         choices=PropertyType.choices,
         default=PropertyType.BOTH,
-        verbose_name='Type de bien'
+        verbose_name='Type de bien',
+        blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -34,7 +38,9 @@ class UserSearchPreferences(models.Model):
         verbose_name_plural = 'Préférences de recherche'
 
     def __str__(self):
-        return f"{self.user.username} - {self.city} ({self.radius_km}km) - {self.get_property_type_display()}"
+        if self.selected_zone:
+            return f"{self.user.username} - {self.selected_zone}"
+        return f"{self.user.username} - Aucune zone sélectionnée"
 
 
 @receiver(post_save, sender=User)
@@ -51,51 +57,13 @@ def save_user_search_preferences(sender, instance, **kwargs):
         instance.search_preferences.save()
 
 
-@receiver(post_save, sender=UserSearchPreferences)
-def sync_search_zone_from_preferences(sender, instance, **kwargs):
-    """
-    Synchronise automatiquement une SearchZone unique avec les UserSearchPreferences
-    Crée ou met à jour la SearchZone quand les préférences sont modifiées
-    """
-    # Désactiver toutes les autres zones de recherche de l'utilisateur
-    SearchZone.objects.filter(user=instance.user).update(is_active=False)
-
-    # Récupérer la première SearchZone ou en créer une nouvelle
-    search_zones = SearchZone.objects.filter(user=instance.user)
-    if search_zones.exists():
-        # Mettre à jour la première zone existante
-        search_zone = search_zones.first()
-
-        # Vérifier si les préférences ont changé
-        has_changed = (
-            search_zone.city != instance.city or
-            search_zone.radius_km != instance.radius_km or
-            search_zone.property_type != instance.property_type
-        )
-
-        # Si les préférences ont changé, dissocier les anciennes annonces
-        if has_changed:
-            search_zone.listings.clear()
-
-        search_zone.city = instance.city
-        search_zone.radius_km = instance.radius_km
-        search_zone.property_type = instance.property_type
-        search_zone.is_active = True
-        search_zone.save()
-    else:
-        # Créer une nouvelle SearchZone
-        SearchZone.objects.create(
-            user=instance.user,
-            city=instance.city,
-            radius_km=instance.radius_km,
-            property_type=instance.property_type,
-            is_active=True,
-        )
+# Signal supprimé : les zones ne sont plus créées automatiquement
+# Les zones sont maintenant créées uniquement par les administrateurs
 
 
 class SearchZone(models.Model):
-    """Zone de recherche d'un utilisateur"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='search_zones')
+    """Zone de recherche créée par un administrateur"""
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_zones', verbose_name='Créée par')
     city = models.CharField(max_length=200, verbose_name='Ville')
     radius_km = models.IntegerField(verbose_name='Rayon (km)')
     property_type = models.CharField(
