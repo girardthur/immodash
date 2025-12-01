@@ -47,9 +47,16 @@ fi
 log_info "Arrêt des services Docker..."
 sudo docker compose -f docker-compose.prod.yml --env-file .env.production down 2>/dev/null || true
 
-# 2. Nettoyer Docker (optionnel - décommenter si besoin)
-# log_warn "Nettoyage Docker (images, containers, volumes non utilisés)..."
-# sudo docker system prune -af --volumes
+# 2. Nettoyer Docker (optionnel)
+read -p "Voulez-vous nettoyer Docker (prune images/containers/volumes non utilisés)? (y/n) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    log_warn "Nettoyage Docker en cours..."
+    sudo docker system prune -af --volumes
+    log_info "Nettoyage Docker terminé"
+else
+    log_info "Nettoyage Docker ignoré"
+fi
 
 # 3. Pull les derniers changements Git
 log_info "Récupération des derniers changements Git..."
