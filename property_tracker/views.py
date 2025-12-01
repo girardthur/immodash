@@ -19,8 +19,11 @@ def dashboard(request):
     Vue principale du dashboard avec les statistiques globales
     """
     # Récupérer la zone sélectionnée par l'utilisateur
-    preferences = request.user.search_preferences
-    selected_zone = preferences.selected_zone if hasattr(request.user, 'search_preferences') and preferences.selected_zone else None
+    try:
+        preferences = request.user.search_preferences
+        selected_zone = preferences.selected_zone if preferences.selected_zone else None
+    except UserSearchPreferences.DoesNotExist:
+        selected_zone = None
 
     # Récupérer les annonces de la zone sélectionnée
     if selected_zone:
@@ -58,17 +61,20 @@ def dashboard(request):
     thirty_days_ago = timezone.now() - timedelta(days=30)
 
     # Récupérer l'historique des prix des 30 derniers jours
-    price_evolution = (
-        PriceHistory.objects.filter(
-            listing__search_zones__in=search_zones,
-            detected_at__gte=thirty_days_ago,
-            price_per_sqm__isnull=False
+    if selected_zone:
+        price_evolution = (
+            PriceHistory.objects.filter(
+                listing__search_zones=selected_zone,
+                detected_at__gte=thirty_days_ago,
+                price_per_sqm__isnull=False
+            )
+            .annotate(date=TruncDate('detected_at'))
+            .values('date')
+            .annotate(avg_price_per_sqm=Avg('price_per_sqm'))
+            .order_by('date')
         )
-        .annotate(date=TruncDate('detected_at'))
-        .values('date')
-        .annotate(avg_price_per_sqm=Avg('price_per_sqm'))
-        .order_by('date')
-    )
+    else:
+        price_evolution = []
 
     # Préparer les données pour le graphique d'évolution
     evolution_data = {
@@ -108,8 +114,11 @@ def listings(request):
     Liste des annonces avec filtres et tri
     """
     # Récupérer la zone sélectionnée par l'utilisateur
-    preferences = request.user.search_preferences
-    selected_zone = preferences.selected_zone if hasattr(request.user, 'search_preferences') and preferences.selected_zone else None
+    try:
+        preferences = request.user.search_preferences
+        selected_zone = preferences.selected_zone if preferences.selected_zone else None
+    except UserSearchPreferences.DoesNotExist:
+        selected_zone = None
 
     # Query de base avec prefetch de l'historique des prix pour éviter N+1 queries
     if selected_zone:
