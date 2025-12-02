@@ -21,7 +21,7 @@ def scrape_all_search_zones():
     (city, radius_km, property_type), ne scrape qu'une seule fois
     """
     try:
-        active_zones = SearchZone.objects.filter(is_active=True).select_related('user')
+        active_zones = SearchZone.objects.filter(is_active=True).select_related('created_by')
         total_listings = 0
 
         # Grouper les zones par critères identiques (city, radius, property_type)
