@@ -2,12 +2,21 @@
 Scrapers pour récupérer les annonces immobilières depuis Leboncoin
 """
 import logging
+import time
+import random
 from typing import List, Dict, Optional, Tuple
 from decimal import Decimal
 import requests
 from lbc import Client, Category, City
 from django.utils import timezone
 from django.core.cache import cache
+
+try:
+    from fake_useragent import UserAgent
+    FAKE_UA_AVAILABLE = True
+except ImportError:
+    FAKE_UA_AVAILABLE = False
+    logger.warning("fake-useragent not installed, using default user agent")
 
 from .models import SearchZone, Listing, PriceHistory, Source, PropertyType
 
@@ -215,6 +224,21 @@ class LeboncoinScraper(BaseScraper):
         Scrape les annonces depuis Leboncoin
         """
         try:
+            # Delay aléatoire initial pour simuler un comportement humain
+            initial_delay = random.uniform(2, 5)
+            logger.info(f"Attente de {initial_delay:.1f}s avant de scraper...")
+            time.sleep(initial_delay)
+
+            # Générer un User-Agent aléatoire si disponible
+            user_agent = None
+            if FAKE_UA_AVAILABLE:
+                try:
+                    ua = UserAgent()
+                    user_agent = ua.random
+                    logger.info(f"Utilisation du User-Agent: {user_agent[:50]}...")
+                except Exception as e:
+                    logger.warning(f"Erreur lors de la génération du User-Agent: {e}")
+
             # Créer un client Leboncoin
             client = Client()
 

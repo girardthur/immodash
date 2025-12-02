@@ -2,6 +2,8 @@
 Tâches Celery pour le scraping automatique des annonces immobilières
 """
 import logging
+import time
+import random
 from celery import shared_task
 from django.utils import timezone
 
@@ -34,10 +36,16 @@ def scrape_all_search_zones():
         logger.info(f"Scraping de {len(zones_by_criteria)} groupes de zones uniques (total: {active_zones.count()} zones)")
 
         # Scraper une seule fois par groupe de critères identiques
-        for criteria_key, zones in zones_by_criteria.items():
+        for idx, (criteria_key, zones) in enumerate(zones_by_criteria.items()):
             city, radius, prop_type = criteria_key
             # Utiliser la première zone du groupe pour le scraping
             primary_zone = zones[0]
+
+            # Delay aléatoire entre chaque zone (sauf pour la première)
+            if idx > 0:
+                delay = random.uniform(10, 30)  # 10-30 secondes
+                logger.info(f"Attente de {delay:.1f}s avant le prochain scraping...")
+                time.sleep(delay)
 
             logger.info(f"Scraping du groupe : {primary_zone} ({len(zones)} zone(s) avec ces critères)")
             results = scrape_search_zone(primary_zone)
