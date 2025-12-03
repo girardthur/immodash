@@ -211,13 +211,7 @@
     </div>
 
     <!-- Graphiques -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Prix moyen au m² par nombre de pièces -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Prix moyen au m² par nombre de pièces</h2>
-            <div id="rooms-chart"></div>
-        </div>
-
+    <div class="grid grid-cols-1 gap-6">
         <!-- Évolution du prix moyen au m² -->
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Évolution du prix moyen au m² (30 derniers jours)</h2>
@@ -227,29 +221,6 @@
 </div>
 
 <script>
-// Graphique prix moyen au m² par nombre de pièces
-const roomsData = JSON.parse('{{ rooms_data|safe }}');
-if (roomsData.rooms.length > 0) {
-    const roomsTrace = {
-        x: roomsData.rooms,
-        y: roomsData.prices,
-        type: 'bar',
-        marker: {
-            color: 'rgb(59, 130, 246)'
-        }
-    };
-
-    const roomsLayout = {
-        xaxis: { title: 'Nombre de pièces' },
-        yaxis: { title: 'Prix moyen au m² (€)' },
-        margin: { t: 20, b: 40, l: 50, r: 20 }
-    };
-
-    Plotly.newPlot('rooms-chart', [roomsTrace], roomsLayout, {responsive: true});
-} else {
-    document.getElementById('rooms-chart').innerHTML = '<p class="text-gray-500 text-center py-8">Pas encore de données</p>';
-}
-
 // Graphique évolution des prix
 const evolutionData = JSON.parse('{{ evolution_data|safe }}');
 if (evolutionData.dates.length > 0) {

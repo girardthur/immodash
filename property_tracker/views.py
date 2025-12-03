@@ -41,14 +41,6 @@ def dashboard(request):
         max_price=Max('current_price')
     )
 
-    # Prix moyen au m² par nombre de pièces
-    avg_price_per_sqm_by_rooms = (
-        all_listings.filter(is_active=True, price_per_sqm__isnull=False, rooms__isnull=False)
-        .values('rooms')
-        .annotate(avg_price_per_sqm=Avg('price_per_sqm'))
-        .order_by('rooms')
-    )
-
     # Taux de rotation (durée moyenne sur le marché)
     sold_listings = all_listings.filter(is_active=False, sold_at__isnull=False)
     total_days = sum(listing.days_on_market for listing in sold_listings)
@@ -82,12 +74,6 @@ def dashboard(request):
         'prices': [float(entry['avg_price_per_sqm']) for entry in price_evolution]
     }
 
-    # Préparer les données pour le graphique par nombre de pièces
-    rooms_data = {
-        'rooms': [f"{entry['rooms']} pièces" for entry in avg_price_per_sqm_by_rooms],
-        'prices': [float(entry['avg_price_per_sqm']) for entry in avg_price_per_sqm_by_rooms]
-    }
-
     # Récupérer les annonces favorites de l'utilisateur
     from .models import Favorite
     favorite_listings = Listing.objects.filter(
@@ -101,7 +87,6 @@ def dashboard(request):
         'max_price': price_stats['max_price'],
         'avg_days_on_market': round(avg_days_on_market, 1),
         'evolution_data': json.dumps(evolution_data),
-        'rooms_data': json.dumps(rooms_data),
         'favorite_listings': favorite_listings,
     }
 
