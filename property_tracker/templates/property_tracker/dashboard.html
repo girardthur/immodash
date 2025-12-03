@@ -203,50 +203,6 @@
     </div>
     {% endif %}
 
-    <!-- Taux de rotation -->
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Taux de rotation</h2>
-        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ avg_days_on_market }} jours</p>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Durée moyenne avant vente</p>
-    </div>
-
-    <!-- Graphiques -->
-    <div class="grid grid-cols-1 gap-6">
-        <!-- Évolution du prix moyen au m² -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Évolution du prix moyen au m² (30 derniers jours)</h2>
-            <div id="evolution-chart"></div>
-        </div>
-    </div>
 </div>
 
-<script>
-// Graphique évolution des prix
-const evolutionData = JSON.parse('{{ evolution_data|safe }}');
-if (evolutionData.dates.length > 0) {
-    const evolutionTrace = {
-        x: evolutionData.dates,
-        y: evolutionData.prices,
-        type: 'scatter',
-        mode: 'lines+markers',
-        line: {
-            color: 'rgb(59, 130, 246)',
-            width: 2
-        },
-        marker: {
-            size: 6
-        }
-    };
-
-    const evolutionLayout = {
-        xaxis: { title: 'Date' },
-        yaxis: { title: 'Prix moyen au m² (€)' },
-        margin: { t: 20, b: 40, l: 50, r: 20 }
-    };
-
-    Plotly.newPlot('evolution-chart', [evolutionTrace], evolutionLayout, {responsive: true});
-} else {
-    document.getElementById('evolution-chart').innerHTML = '<p class="text-gray-500 text-center py-8">Pas encore de données</p>';
-}
-</script>
 {% endblock %}

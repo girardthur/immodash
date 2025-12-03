@@ -41,39 +41,6 @@ def dashboard(request):
         max_price=Max('current_price')
     )
 
-    # Taux de rotation (durée moyenne sur le marché)
-    sold_listings = all_listings.filter(is_active=False, sold_at__isnull=False)
-    total_days = sum(listing.days_on_market for listing in sold_listings)
-    avg_days_on_market = total_days / sold_listings.count() if sold_listings.count() > 0 else 0
-
-    # Évolution des prix moyens au m² dans le temps (30 derniers jours)
-    from datetime import timedelta
-    from django.utils import timezone
-
-    thirty_days_ago = timezone.now() - timedelta(days=30)
-
-    # Récupérer l'historique des prix des 30 derniers jours
-    if selected_zone:
-        price_evolution = (
-            PriceHistory.objects.filter(
-                listing__search_zones=selected_zone,
-                detected_at__gte=thirty_days_ago,
-                price_per_sqm__isnull=False
-            )
-            .annotate(date=TruncDate('detected_at'))
-            .values('date')
-            .annotate(avg_price_per_sqm=Avg('price_per_sqm'))
-            .order_by('date')
-        )
-    else:
-        price_evolution = []
-
-    # Préparer les données pour le graphique d'évolution
-    evolution_data = {
-        'dates': [entry['date'].strftime('%Y-%m-%d') for entry in price_evolution],
-        'prices': [float(entry['avg_price_per_sqm']) for entry in price_evolution]
-    }
-
     # Récupérer les annonces favorites de l'utilisateur
     from .models import Favorite
     favorite_listings = Listing.objects.filter(
@@ -85,8 +52,6 @@ def dashboard(request):
         'inactive_listings_count': inactive_listings_count,
         'min_price': price_stats['min_price'],
         'max_price': price_stats['max_price'],
-        'avg_days_on_market': round(avg_days_on_market, 1),
-        'evolution_data': json.dumps(evolution_data),
         'favorite_listings': favorite_listings,
     }
 
