@@ -202,7 +202,7 @@ class Listing(models.Model):
     def is_new(self):
         """Retourne True si l'annonce a moins de 48h"""
         from datetime import timedelta
-        return (timezone.now() - self.first_seen_at) < timedelta(hours=48)
+        return (timezone.now() - self.created_at) < timedelta(hours=48)
 
 
 class PriceHistory(models.Model):
